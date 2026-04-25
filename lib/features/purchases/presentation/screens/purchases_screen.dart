@@ -37,9 +37,8 @@ class _PurchasesScreenState extends ConsumerState<PurchasesScreen>
 
   Future<void> _createPurchase() async {
     try {
-      final order = await ref
-          .read(purchaseRepositoryProvider)
-          .create(storeId: _storeId);
+      final order =
+          await ref.read(purchaseRepositoryProvider).create(storeId: _storeId);
       if (mounted) {
         ref.invalidate(purchasesListProvider());
         context.push('/purchases/${order.id}');
@@ -79,7 +78,8 @@ class _PurchasesScreenState extends ConsumerState<PurchasesScreen>
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => ErrorView(
           error: e,
-          onRetry: () => ref.invalidate(purchasesListProvider(storeId: _storeId)),
+          onRetry: () =>
+              ref.invalidate(purchasesListProvider(storeId: _storeId)),
         ),
         data: (purchases) => TabBarView(
           controller: _tabCtrl,
@@ -88,11 +88,16 @@ class _PurchasesScreenState extends ConsumerState<PurchasesScreen>
               purchases: purchases
                   .where((p) => p.status == PurchaseStatus.open)
                   .toList(),
+              // Передаем коллбэк для обновления
+              onRefresh: () async =>
+                  ref.invalidate(purchasesListProvider(storeId: _storeId)),
             ),
             _PurchaseList(
               purchases: purchases
                   .where((p) => p.status == PurchaseStatus.closed)
                   .toList(),
+              onRefresh: () async =>
+                  ref.invalidate(purchasesListProvider(storeId: _storeId)),
             ),
           ],
         ),
@@ -103,33 +108,51 @@ class _PurchasesScreenState extends ConsumerState<PurchasesScreen>
 
 class _PurchaseList extends StatelessWidget {
   final List<PurchaseOrder> purchases;
+  final Future<void> Function() onRefresh; // Добавили коллбэк
 
-  const _PurchaseList({required this.purchases});
+  const _PurchaseList({
+    required this.purchases,
+    required this.onRefresh,
+  });
 
   @override
   Widget build(BuildContext context) {
     if (purchases.isEmpty) {
-      return const Center(child: Text('Нет заявок'));
-    }
-    return ListView.builder(
-      itemCount: purchases.length,
-      itemBuilder: (_, i) {
-        final p = purchases[i];
-        return ListTile(
-          title: Text('Заявка от ${formatDate(p.createdAt)}'),
-          subtitle: Text('${p.items.length} позиций'),
-          trailing: Chip(
-            label: Text(
-              p.status == PurchaseStatus.open ? 'открыта' : 'закрыта',
-              style: const TextStyle(fontSize: 12),
-            ),
-            backgroundColor: p.status == PurchaseStatus.open
-                ? Colors.green[100]
-                : Colors.grey[200],
+      return RefreshIndicator(
+        onRefresh: onRefresh,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: SizedBox(
+            height: MediaQuery.of(context).size.height * 0.7,
+            child: const Center(child: Text('Нет заявок')),
           ),
-          onTap: () => context.push('/purchases/${p.id}'),
-        );
-      },
+        ),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: onRefresh,
+      child: ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics(),
+        itemCount: purchases.length,
+        itemBuilder: (_, i) {
+          final p = purchases[i];
+          return ListTile(
+            title: Text('Заявка от ${formatDate(p.createdAt)}'),
+            subtitle: Text('${p.items.length} позиций'),
+            trailing: Chip(
+              label: Text(
+                p.status == PurchaseStatus.open ? 'открыта' : 'закрыта',
+                style: const TextStyle(fontSize: 12),
+              ),
+              backgroundColor: p.status == PurchaseStatus.open
+                  ? Colors.green[100]
+                  : Colors.grey[200],
+            ),
+            onTap: () => context.push('/purchases/${p.id}'),
+          );
+        },
+      ),
     );
   }
 }
