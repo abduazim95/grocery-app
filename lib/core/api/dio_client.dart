@@ -1,3 +1,4 @@
+import 'package:chucker_flutter/chucker_flutter.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:grocery/core/api/app_exception.dart';
@@ -17,6 +18,7 @@ class DioClient {
       AuthInterceptor(storage),
       ErrorInterceptor(),
       if (kDebugMode) LogInterceptor(requestBody: true, responseBody: true),
+      if (kDebugMode) ChuckerDioInterceptor(),
     ]);
   }
 }

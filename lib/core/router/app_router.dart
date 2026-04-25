@@ -1,3 +1,4 @@
+import 'package:chucker_flutter/chucker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -34,24 +35,36 @@ GoRouter appRouter(Ref ref) {
   return GoRouter(
     initialLocation: AppRoutes.serverSetup,
     refreshListenable: notifier,
+    observers: [ChuckerFlutter.navigatorObserver],
     redirect: (context, state) {
       final loc = state.matchedLocation;
-      final host = ref.read(serverConfigProvider).valueOrNull;
-      final user = ref.read(authStateProvider).valueOrNull;
+      final serverConfig = ref.read(serverConfigProvider);
+      final authState = ref.read(authStateProvider);
+
+      if (serverConfig.isLoading || authState.isLoading) return null;
+
+      final host = serverConfig.valueOrNull;
+      final user = authState.valueOrNull;
       final isSetup = loc == AppRoutes.serverSetup;
       final isAuth = loc.startsWith('/auth');
 
-      if (host == null && !isSetup) return AppRoutes.serverSetup;
-      if (host != null && isSetup) return AppRoutes.login;
+      if (host == null) {
+        return isSetup ? null : AppRoutes.serverSetup;
+      }
 
-      if (user == null && !isAuth) return AppRoutes.login;
-      if (user != null && isAuth) return AppRoutes.products;
+      if (isSetup) return AppRoutes.login;
 
-      if (loc.startsWith('/admin') && !(user?.isSuperAdmin ?? false)) {
+      if (user == null) {
+        return isAuth ? null : AppRoutes.login;
+      }
+
+      if (isAuth) return AppRoutes.products;
+
+      if (loc.startsWith('/admin') && !user.isSuperAdmin) {
         return AppRoutes.products;
       }
       if ((loc.startsWith('/stores') || loc.startsWith('/stock')) &&
-          !(user?.isManager ?? false)) {
+          !user.isManager) {
         return AppRoutes.products;
       }
       return null;

@@ -1,3 +1,5 @@
+import 'package:chucker_flutter/chucker_flutter.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -5,12 +7,27 @@ import 'package:grocery/core/providers/core_providers.dart';
 import 'package:grocery/core/router/app_routes.dart';
 import 'package:grocery/shared/utils/error_messages.dart';
 import 'package:grocery/shared/widgets/confirm_dialog.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class ProfileScreen extends ConsumerWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+  bool _chuckerEnabled = kDebugMode && ChuckerFlutter.isDebugMode;
+
+  Future<void> _toggleChucker(bool value) async {
+    ChuckerFlutter.isDebugMode = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('chucker_enabled', value);
+    setState(() => _chuckerEnabled = value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final user = ref.watch(authStateProvider).valueOrNull;
     final host = ref.watch(serverConfigProvider).valueOrNull;
 
@@ -47,6 +64,16 @@ class ProfileScreen extends ConsumerWidget {
             title: const Text('Очистить кэш'),
             onTap: () => _clearCache(context, ref),
           ),
+          if (kDebugMode) ...[
+            const Divider(),
+            SwitchListTile(
+              secondary: const Icon(Icons.bug_report_outlined),
+              title: const Text('HTTP инспектор (Chucker)'),
+              subtitle: const Text('Перехват и просмотр запросов'),
+              value: _chuckerEnabled,
+              onChanged: _toggleChucker,
+            ),
+          ],
           const Divider(),
           ListTile(
             leading: const Icon(Icons.logout, color: Colors.red),

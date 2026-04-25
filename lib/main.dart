@@ -1,3 +1,5 @@
+import 'package:chucker_flutter/chucker_flutter.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:grocery/core/db/app_database.dart';
@@ -5,10 +7,15 @@ import 'package:grocery/core/providers/core_providers.dart';
 import 'package:grocery/core/router/app_router.dart';
 import 'package:grocery/core/theme/app_theme.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('ru', null);
+  if (kDebugMode) {
+    final prefs = await SharedPreferences.getInstance();
+    ChuckerFlutter.isDebugMode = prefs.getBool('chucker_enabled') ?? true;
+  }
   runApp(const ProviderScope(child: GroceryApp()));
 }
 
