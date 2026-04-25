@@ -64,12 +64,11 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
     );
     if (barcode == null || !mounted) return;
 
-    await ref
+    final result = await ref
         .read(barcodeLookupProvider.notifier)
         .lookup(_businessId, barcode);
 
     if (!mounted) return;
-    final result = ref.read(barcodeLookupProvider);
     result.when(
       data: (product) {
         if (product != null) {

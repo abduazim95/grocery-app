@@ -10,7 +10,7 @@ class BarcodeLookup extends _$BarcodeLookup {
   @override
   AsyncValue<Product?> build() => const AsyncData(null);
 
-  Future<void> lookup(String businessId, String barcode) async {
+  Future<AsyncValue<Product?>> lookup(String businessId, String barcode) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
       try {
@@ -23,6 +23,8 @@ class BarcodeLookup extends _$BarcodeLookup {
         rethrow;
       }
     });
+
+    return state;
   }
 
   bool _is404(Object e) {
