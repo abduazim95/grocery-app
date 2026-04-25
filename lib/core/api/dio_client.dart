@@ -13,12 +13,14 @@ class DioClient {
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 15),
       headers: {'Content-Type': 'application/json'},
+      // Allow all status codes through onResponse so Chucker can capture them
+      validateStatus: (status) => true,
     ));
     dio.interceptors.addAll([
       AuthInterceptor(storage),
+      if (kDebugMode) ChuckerDioInterceptor(),
       ErrorInterceptor(),
       if (kDebugMode) LogInterceptor(requestBody: true, responseBody: true),
-      if (kDebugMode) ChuckerDioInterceptor(),
     ]);
   }
 }
@@ -38,23 +40,43 @@ class AuthInterceptor extends Interceptor {
   }
 
   @override
-  void onError(DioException err, ErrorInterceptorHandler handler) async {
-    if (err.response?.statusCode == 401) {
+  void onResponse(Response response, ResponseInterceptorHandler handler) async {
+    if (response.statusCode == 401) {
       await _storage.deleteToken();
     }
-    handler.next(err);
+    handler.next(response);
   }
 }
 
 class ErrorInterceptor extends Interceptor {
   @override
+  void onResponse(Response response, ResponseInterceptorHandler handler) {
+    final status = response.statusCode ?? 0;
+    if (status >= 400) {
+      handler.reject(DioException(
+        requestOptions: response.requestOptions,
+        error: _parseServerError(response),
+        response: response,
+        type: DioExceptionType.badResponse,
+      ));
+    } else {
+      handler.next(response);
+    }
+  }
+
+  @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
     final exception = switch (err.type) {
       DioExceptionType.connectionTimeout ||
       DioExceptionType.receiveTimeout ||
+      DioExceptionType.sendTimeout ||
       DioExceptionType.connectionError =>
         const AppException.network(),
-      _ => _parseServerError(err.response),
+      _ => AppException.server(
+          code: 'internal',
+          message: err.message ?? 'Ошибка сервера',
+          status: err.response?.statusCode ?? 500,
+        ),
     };
     handler.reject(DioException(
       requestOptions: err.requestOptions,
@@ -64,8 +86,7 @@ class ErrorInterceptor extends Interceptor {
     ));
   }
 
-  AppException _parseServerError(Response? response) {
-    if (response == null) return const AppException.network();
+  AppException _parseServerError(Response response) {
     final body = response.data as Map<String, dynamic>?;
     return AppException.server(
       code: body?['code'] as String? ?? 'internal',

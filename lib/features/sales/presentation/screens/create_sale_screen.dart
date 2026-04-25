@@ -30,6 +30,7 @@ class _CreateSaleScreenState extends ConsumerState<CreateSaleScreen> {
   Timer? _debounce;
 
   String get _storeId => ref.read(authStateProvider).valueOrNull?.storeId ?? '';
+  String get _businessId => ref.read(authStateProvider).valueOrNull?.businessId ?? '';
 
   @override
   void dispose() {
@@ -49,14 +50,14 @@ class _CreateSaleScreenState extends ConsumerState<CreateSaleScreen> {
 
   Future<void> _addByBarcode(String barcode) async {
     try {
-      final cached = await ref.read(appDatabaseProvider).findByBarcode(_storeId, barcode);
+      final cached = await ref.read(appDatabaseProvider).findByBarcode(_businessId, barcode);
       if (cached != null) {
         ref.read(createSaleProvider.notifier).addOrIncrement(cached.toProduct());
         return;
       }
       final product = await ref
           .read(productRepositoryProvider)
-          .getByBarcode(storeId: _storeId, barcode: barcode);
+          .getByBarcode(businessId: _businessId, barcode: barcode);
       ref.read(createSaleProvider.notifier).addOrIncrement(product);
     } catch (e) {
       if (mounted) {
@@ -81,7 +82,7 @@ class _CreateSaleScreenState extends ConsumerState<CreateSaleScreen> {
       try {
         final result = await ref
             .read(productRepositoryProvider)
-            .listProducts(storeId: _storeId, query: q);
+            .listProducts(businessId: _businessId, query: q);
         if (mounted) setState(() => _searchResults = result.products);
       } finally {
         if (mounted) setState(() => _isSearching = false);

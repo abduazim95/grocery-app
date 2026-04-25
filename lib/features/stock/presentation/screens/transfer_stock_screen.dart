@@ -28,6 +28,7 @@ class _TransferStockScreenState extends ConsumerState<TransferStockScreen> {
   List<Product> _searchResults = [];
 
   String get _storeId => ref.read(authStateProvider).valueOrNull?.storeId ?? '';
+  String get _businessId => ref.read(authStateProvider).valueOrNull?.businessId ?? '';
 
   @override
   void dispose() {
@@ -37,10 +38,9 @@ class _TransferStockScreenState extends ConsumerState<TransferStockScreen> {
   }
 
   Future<void> _search(String q) async {
-    if (q.isEmpty || _fromStoreId == null) return;
     final r = await ref
         .read(productRepositoryProvider)
-        .listProducts(storeId: _fromStoreId!, query: q);
+        .listProducts(businessId: _businessId, query: q);
     setState(() => _searchResults = r.products);
   }
 

@@ -9,7 +9,7 @@ class ProductRemoteDs {
   ProductRemoteDs(this._client);
 
   Future<ProductListResult> listProducts({
-    required String storeId,
+    required String businessId,
     String query = '',
     int page = 1,
     int pageSize = 30,
@@ -17,7 +17,7 @@ class ProductRemoteDs {
     final response = await _client.dio.get(
       Endpoints.products,
       queryParameters: {
-        'store_id': storeId,
+        'business_id': businessId,
         if (query.isNotEmpty) 'q': query,
         'page': page,
         'page_size': pageSize,
@@ -30,18 +30,18 @@ class ProductRemoteDs {
   }
 
   Future<Product> getByBarcode({
-    required String storeId,
+    required String businessId,
     required String barcode,
   }) async {
     final response = await _client.dio.get(
       Endpoints.productBarcode(barcode),
-      queryParameters: {'store_id': storeId},
+      queryParameters: {'business_id': businessId},
     );
     return unwrapData(response, (d) => Product.fromJson(d as Map<String, dynamic>));
   }
 
   Future<Product> create({
-    required String storeId,
+    required String businessId,
     required String name,
     required double price,
     required String unit,
@@ -49,7 +49,7 @@ class ProductRemoteDs {
   }) async {
     final response = await _client.dio.post(
       Endpoints.products,
-      queryParameters: {'store_id': storeId},
+      queryParameters: {'business_id': businessId},
       data: {
         'name': name,
         'price': price,

@@ -21,6 +21,7 @@ import 'package:grocery/features/purchases/presentation/screens/purchases_screen
 import 'package:grocery/features/sales/presentation/screens/create_sale_screen.dart';
 import 'package:grocery/features/sales/presentation/screens/sales_screen.dart';
 import 'package:grocery/features/server_setup/presentation/screens/server_setup_screen.dart';
+import 'package:grocery/features/settings/presentation/screens/settings_screen.dart';
 import 'package:grocery/features/stock/presentation/screens/stock_screen.dart';
 import 'package:grocery/features/stock/presentation/screens/transfer_stock_screen.dart';
 import 'package:grocery/features/stores/presentation/screens/create_store_screen.dart';
@@ -33,26 +34,20 @@ part 'app_router.g.dart';
 GoRouter appRouter(Ref ref) {
   final notifier = _RouterNotifier(ref);
   return GoRouter(
-    initialLocation: AppRoutes.serverSetup,
+    initialLocation: AppRoutes.login,
     refreshListenable: notifier,
     observers: [ChuckerFlutter.navigatorObserver],
     redirect: (context, state) {
       final loc = state.matchedLocation;
-      final serverConfig = ref.read(serverConfigProvider);
       final authState = ref.read(authStateProvider);
 
-      if (serverConfig.isLoading || authState.isLoading) return null;
+      if (authState.isLoading) return null;
 
-      final host = serverConfig.valueOrNull;
+      // Settings and server-setup are always accessible
+      if (loc == AppRoutes.settings || loc == AppRoutes.serverSetup) return null;
+
       final user = authState.valueOrNull;
-      final isSetup = loc == AppRoutes.serverSetup;
       final isAuth = loc.startsWith('/auth');
-
-      if (host == null) {
-        return isSetup ? null : AppRoutes.serverSetup;
-      }
-
-      if (isSetup) return AppRoutes.login;
 
       if (user == null) {
         return isAuth ? null : AppRoutes.login;
@@ -143,13 +138,13 @@ GoRouter appRouter(Ref ref) {
         builder: (_, __) => const CreateManagerScreen(),
       ),
       GoRoute(path: AppRoutes.profile, builder: (_, __) => const ProfileScreen()),
+      GoRoute(path: AppRoutes.settings, builder: (_, __) => const SettingsScreen()),
     ],
   );
 }
 
 class _RouterNotifier extends ChangeNotifier {
   _RouterNotifier(Ref ref) {
-    ref.listen(serverConfigProvider, (_, __) => notifyListeners());
     ref.listen(authStateProvider, (_, __) => notifyListeners());
   }
 }

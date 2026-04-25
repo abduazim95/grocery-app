@@ -40,13 +40,13 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
     super.dispose();
   }
 
-  String get _storeId => ref.read(authStateProvider).valueOrNull?.storeId ?? '';
+  String get _businessId => ref.read(authStateProvider).valueOrNull?.businessId ?? '';
 
   void _onScroll() {
     if (_scrollCtrl.position.pixels >= _scrollCtrl.position.maxScrollExtent - 200) {
       ref
-          .read(productsListNotifierProvider(_storeId, query: _query).notifier)
-          .loadMore(_storeId, query: _query);
+          .read(productsListNotifierProvider(_businessId, query: _query).notifier)
+          .loadMore(_businessId, query: _query);
     }
   }
 
@@ -66,7 +66,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
 
     await ref
         .read(barcodeLookupProvider.notifier)
-        .lookup(_storeId, barcode);
+        .lookup(_businessId, barcode);
 
     if (!mounted) return;
     final result = ref.read(barcodeLookupProvider);
@@ -119,17 +119,17 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final storeId = _storeId;
+    final businessId = _businessId;
     final productsAsync =
-        ref.watch(productsListNotifierProvider(storeId, query: _query));
+        ref.watch(productsListNotifierProvider(businessId, query: _query));
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Товары'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.person_outlined),
-            onPressed: () => context.push(AppRoutes.profile),
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () => context.push(AppRoutes.settings),
           ),
         ],
       ),
@@ -153,13 +153,13 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
               error: (e, _) => ErrorView(
                 error: e,
                 onRetry: () => ref
-                    .read(productsListNotifierProvider(storeId, query: _query).notifier)
-                    .refresh(storeId, query: _query),
+                    .read(productsListNotifierProvider(businessId, query: _query).notifier)
+                    .refresh(businessId, query: _query),
               ),
               data: (state) => RefreshIndicator(
                 onRefresh: () => ref
-                    .read(productsListNotifierProvider(storeId, query: _query).notifier)
-                    .refresh(storeId, query: _query),
+                    .read(productsListNotifierProvider(businessId, query: _query).notifier)
+                    .refresh(businessId, query: _query),
                 child: state.items.isEmpty
                     ? const Center(child: Text('Товары не найдены'))
                     : ListView.builder(

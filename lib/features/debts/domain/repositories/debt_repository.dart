@@ -16,6 +16,7 @@ abstract interface class DebtRepository {
     String? debtorPhone,
     String? description,
   });
+  Future<List<DebtPayment>> listDebtPayments(String id);
   Future<DebtRecord> addPayment({
     required String id,
     required double amount,

@@ -41,7 +41,7 @@ class _CreateProductScreenState extends ConsumerState<CreateProductScreen> {
     super.dispose();
   }
 
-  String get _storeId => ref.read(authStateProvider).valueOrNull?.storeId ?? '';
+  String get _businessId => ref.read(authStateProvider).valueOrNull?.businessId ?? '';
 
   Future<void> _save() async {
     final name = _nameCtrl.text.trim();
@@ -63,7 +63,7 @@ class _CreateProductScreenState extends ConsumerState<CreateProductScreen> {
     setState(() => _isLoading = true);
     try {
       await ref.read(productRepositoryProvider).create(
-            storeId: _storeId,
+            businessId: _businessId,
             name: name,
             price: price,
             unit: _unit,
@@ -99,7 +99,7 @@ class _CreateProductScreenState extends ConsumerState<CreateProductScreen> {
               controller: _priceCtrl,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
-              decoration: const InputDecoration(labelText: 'Цена *', suffixText: 'сум'),
+              decoration: const InputDecoration(labelText: 'Цена *', suffixText: 'тг'),
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(

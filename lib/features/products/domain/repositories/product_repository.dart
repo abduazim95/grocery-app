@@ -3,14 +3,14 @@ import 'package:grocery/shared/models/product.dart';
 
 abstract interface class ProductRepository {
   Future<ProductListResult> listProducts({
-    required String storeId,
+    required String businessId,
     String query,
     int page,
     int pageSize,
   });
-  Future<Product> getByBarcode({required String storeId, required String barcode});
+  Future<Product> getByBarcode({required String businessId, required String barcode});
   Future<Product> create({
-    required String storeId,
+    required String businessId,
     required String name,
     required double price,
     required String unit,

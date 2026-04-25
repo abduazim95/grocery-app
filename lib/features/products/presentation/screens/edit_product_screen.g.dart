@@ -6,7 +6,7 @@ part of 'edit_product_screen.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$productFromCacheHash() => r'8d11727c4fe2877cee56a49a7df254940d0b7af5';
+String _$productFromCacheHash() => r'fac24a6923835b9539b5ac2606bb6a853df113bb';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -40,11 +40,11 @@ class ProductFromCacheFamily extends Family<AsyncValue<Product?>> {
 
   /// See also [productFromCache].
   ProductFromCacheProvider call(
-    String storeId,
+    String businessId,
     String productId,
   ) {
     return ProductFromCacheProvider(
-      storeId,
+      businessId,
       productId,
     );
   }
@@ -54,7 +54,7 @@ class ProductFromCacheFamily extends Family<AsyncValue<Product?>> {
     covariant ProductFromCacheProvider provider,
   ) {
     return call(
-      provider.storeId,
+      provider.businessId,
       provider.productId,
     );
   }
@@ -78,12 +78,12 @@ class ProductFromCacheFamily extends Family<AsyncValue<Product?>> {
 class ProductFromCacheProvider extends AutoDisposeFutureProvider<Product?> {
   /// See also [productFromCache].
   ProductFromCacheProvider(
-    String storeId,
+    String businessId,
     String productId,
   ) : this._internal(
           (ref) => productFromCache(
             ref as ProductFromCacheRef,
-            storeId,
+            businessId,
             productId,
           ),
           from: productFromCacheProvider,
@@ -95,7 +95,7 @@ class ProductFromCacheProvider extends AutoDisposeFutureProvider<Product?> {
           dependencies: ProductFromCacheFamily._dependencies,
           allTransitiveDependencies:
               ProductFromCacheFamily._allTransitiveDependencies,
-          storeId: storeId,
+          businessId: businessId,
           productId: productId,
         );
 
@@ -106,11 +106,11 @@ class ProductFromCacheProvider extends AutoDisposeFutureProvider<Product?> {
     required super.allTransitiveDependencies,
     required super.debugGetCreateSourceHash,
     required super.from,
-    required this.storeId,
+    required this.businessId,
     required this.productId,
   }) : super.internal();
 
-  final String storeId;
+  final String businessId;
   final String productId;
 
   @override
@@ -126,7 +126,7 @@ class ProductFromCacheProvider extends AutoDisposeFutureProvider<Product?> {
         dependencies: null,
         allTransitiveDependencies: null,
         debugGetCreateSourceHash: null,
-        storeId: storeId,
+        businessId: businessId,
         productId: productId,
       ),
     );
@@ -140,14 +140,14 @@ class ProductFromCacheProvider extends AutoDisposeFutureProvider<Product?> {
   @override
   bool operator ==(Object other) {
     return other is ProductFromCacheProvider &&
-        other.storeId == storeId &&
+        other.businessId == businessId &&
         other.productId == productId;
   }
 
   @override
   int get hashCode {
     var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, storeId.hashCode);
+    hash = _SystemHash.combine(hash, businessId.hashCode);
     hash = _SystemHash.combine(hash, productId.hashCode);
 
     return _SystemHash.finish(hash);
@@ -157,8 +157,8 @@ class ProductFromCacheProvider extends AutoDisposeFutureProvider<Product?> {
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 mixin ProductFromCacheRef on AutoDisposeFutureProviderRef<Product?> {
-  /// The parameter `storeId` of this provider.
-  String get storeId;
+  /// The parameter `businessId` of this provider.
+  String get businessId;
 
   /// The parameter `productId` of this provider.
   String get productId;
@@ -170,7 +170,7 @@ class _ProductFromCacheProviderElement
   _ProductFromCacheProviderElement(super.provider);
 
   @override
-  String get storeId => (origin as ProductFromCacheProvider).storeId;
+  String get businessId => (origin as ProductFromCacheProvider).businessId;
   @override
   String get productId => (origin as ProductFromCacheProvider).productId;
 }

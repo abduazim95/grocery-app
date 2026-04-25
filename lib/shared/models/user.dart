@@ -20,6 +20,7 @@ class User with _$User {
     required String phone,
     required UserRole role,
     @JsonKey(name: 'store_id') String? storeId,
+    @JsonKey(name: 'business_id') String? businessId,
     @JsonKey(name: 'created_at') required DateTime createdAt,
   }) = _User;
 

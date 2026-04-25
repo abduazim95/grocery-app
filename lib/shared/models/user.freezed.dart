@@ -26,6 +26,8 @@ mixin _$User {
   UserRole get role => throw _privateConstructorUsedError;
   @JsonKey(name: 'store_id')
   String? get storeId => throw _privateConstructorUsedError;
+  @JsonKey(name: 'business_id')
+  String? get businessId => throw _privateConstructorUsedError;
   @JsonKey(name: 'created_at')
   DateTime get createdAt => throw _privateConstructorUsedError;
 
@@ -49,6 +51,7 @@ abstract class $UserCopyWith<$Res> {
       String phone,
       UserRole role,
       @JsonKey(name: 'store_id') String? storeId,
+      @JsonKey(name: 'business_id') String? businessId,
       @JsonKey(name: 'created_at') DateTime createdAt});
 }
 
@@ -72,6 +75,7 @@ class _$UserCopyWithImpl<$Res, $Val extends User>
     Object? phone = null,
     Object? role = null,
     Object? storeId = freezed,
+    Object? businessId = freezed,
     Object? createdAt = null,
   }) {
     return _then(_value.copyWith(
@@ -95,6 +99,10 @@ class _$UserCopyWithImpl<$Res, $Val extends User>
           ? _value.storeId
           : storeId // ignore: cast_nullable_to_non_nullable
               as String?,
+      businessId: freezed == businessId
+          ? _value.businessId
+          : businessId // ignore: cast_nullable_to_non_nullable
+              as String?,
       createdAt: null == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -116,6 +124,7 @@ abstract class _$$UserImplCopyWith<$Res> implements $UserCopyWith<$Res> {
       String phone,
       UserRole role,
       @JsonKey(name: 'store_id') String? storeId,
+      @JsonKey(name: 'business_id') String? businessId,
       @JsonKey(name: 'created_at') DateTime createdAt});
 }
 
@@ -136,6 +145,7 @@ class __$$UserImplCopyWithImpl<$Res>
     Object? phone = null,
     Object? role = null,
     Object? storeId = freezed,
+    Object? businessId = freezed,
     Object? createdAt = null,
   }) {
     return _then(_$UserImpl(
@@ -159,6 +169,10 @@ class __$$UserImplCopyWithImpl<$Res>
           ? _value.storeId
           : storeId // ignore: cast_nullable_to_non_nullable
               as String?,
+      businessId: freezed == businessId
+          ? _value.businessId
+          : businessId // ignore: cast_nullable_to_non_nullable
+              as String?,
       createdAt: null == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -176,6 +190,7 @@ class _$UserImpl extends _User {
       required this.phone,
       required this.role,
       @JsonKey(name: 'store_id') this.storeId,
+      @JsonKey(name: 'business_id') this.businessId,
       @JsonKey(name: 'created_at') required this.createdAt})
       : super._();
 
@@ -194,12 +209,15 @@ class _$UserImpl extends _User {
   @JsonKey(name: 'store_id')
   final String? storeId;
   @override
+  @JsonKey(name: 'business_id')
+  final String? businessId;
+  @override
   @JsonKey(name: 'created_at')
   final DateTime createdAt;
 
   @override
   String toString() {
-    return 'User(id: $id, name: $name, phone: $phone, role: $role, storeId: $storeId, createdAt: $createdAt)';
+    return 'User(id: $id, name: $name, phone: $phone, role: $role, storeId: $storeId, businessId: $businessId, createdAt: $createdAt)';
   }
 
   @override
@@ -212,14 +230,16 @@ class _$UserImpl extends _User {
             (identical(other.phone, phone) || other.phone == phone) &&
             (identical(other.role, role) || other.role == role) &&
             (identical(other.storeId, storeId) || other.storeId == storeId) &&
+            (identical(other.businessId, businessId) ||
+                other.businessId == businessId) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, id, name, phone, role, storeId, createdAt);
+  int get hashCode => Object.hash(
+      runtimeType, id, name, phone, role, storeId, businessId, createdAt);
 
   /// Create a copy of User
   /// with the given fields replaced by the non-null parameter values.
@@ -244,6 +264,7 @@ abstract class _User extends User {
           required final String phone,
           required final UserRole role,
           @JsonKey(name: 'store_id') final String? storeId,
+          @JsonKey(name: 'business_id') final String? businessId,
           @JsonKey(name: 'created_at') required final DateTime createdAt}) =
       _$UserImpl;
   const _User._() : super._();
@@ -261,6 +282,9 @@ abstract class _User extends User {
   @override
   @JsonKey(name: 'store_id')
   String? get storeId;
+  @override
+  @JsonKey(name: 'business_id')
+  String? get businessId;
   @override
   @JsonKey(name: 'created_at')
   DateTime get createdAt;

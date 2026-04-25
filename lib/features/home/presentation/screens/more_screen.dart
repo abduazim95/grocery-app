@@ -12,7 +12,15 @@ class MoreScreen extends ConsumerWidget {
     final user = ref.watch(authStateProvider).valueOrNull;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Ещё')),
+      appBar: AppBar(
+        title: const Text('Ещё'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () => context.push(AppRoutes.settings),
+          ),
+        ],
+      ),
       body: ListView(
         children: [
           ListTile(

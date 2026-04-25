@@ -6,7 +6,7 @@ part of 'barcode_lookup_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$barcodeLookupHash() => r'9c69e4e024518fc7299b16e286777745ee4de539';
+String _$barcodeLookupHash() => r'8223a120374fed79a6bd129b739b7c1e9f1c3d8a';
 
 /// See also [BarcodeLookup].
 @ProviderFor(BarcodeLookup)

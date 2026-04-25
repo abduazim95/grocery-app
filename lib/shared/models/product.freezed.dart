@@ -21,8 +21,8 @@ Product _$ProductFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$Product {
   String get id => throw _privateConstructorUsedError;
-  @JsonKey(name: 'store_id')
-  String get storeId => throw _privateConstructorUsedError;
+  @JsonKey(name: 'business_id')
+  String get businessId => throw _privateConstructorUsedError;
   String get name => throw _privateConstructorUsedError;
   String? get barcode => throw _privateConstructorUsedError;
   double get price => throw _privateConstructorUsedError;
@@ -46,7 +46,7 @@ abstract class $ProductCopyWith<$Res> {
   @useResult
   $Res call(
       {String id,
-      @JsonKey(name: 'store_id') String storeId,
+      @JsonKey(name: 'business_id') String businessId,
       String name,
       String? barcode,
       double price,
@@ -70,7 +70,7 @@ class _$ProductCopyWithImpl<$Res, $Val extends Product>
   @override
   $Res call({
     Object? id = null,
-    Object? storeId = null,
+    Object? businessId = null,
     Object? name = null,
     Object? barcode = freezed,
     Object? price = null,
@@ -82,9 +82,9 @@ class _$ProductCopyWithImpl<$Res, $Val extends Product>
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
               as String,
-      storeId: null == storeId
-          ? _value.storeId
-          : storeId // ignore: cast_nullable_to_non_nullable
+      businessId: null == businessId
+          ? _value.businessId
+          : businessId // ignore: cast_nullable_to_non_nullable
               as String,
       name: null == name
           ? _value.name
@@ -119,7 +119,7 @@ abstract class _$$ProductImplCopyWith<$Res> implements $ProductCopyWith<$Res> {
   @useResult
   $Res call(
       {String id,
-      @JsonKey(name: 'store_id') String storeId,
+      @JsonKey(name: 'business_id') String businessId,
       String name,
       String? barcode,
       double price,
@@ -141,7 +141,7 @@ class __$$ProductImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? id = null,
-    Object? storeId = null,
+    Object? businessId = null,
     Object? name = null,
     Object? barcode = freezed,
     Object? price = null,
@@ -153,9 +153,9 @@ class __$$ProductImplCopyWithImpl<$Res>
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
               as String,
-      storeId: null == storeId
-          ? _value.storeId
-          : storeId // ignore: cast_nullable_to_non_nullable
+      businessId: null == businessId
+          ? _value.businessId
+          : businessId // ignore: cast_nullable_to_non_nullable
               as String,
       name: null == name
           ? _value.name
@@ -186,7 +186,7 @@ class __$$ProductImplCopyWithImpl<$Res>
 class _$ProductImpl implements _Product {
   const _$ProductImpl(
       {required this.id,
-      @JsonKey(name: 'store_id') required this.storeId,
+      @JsonKey(name: 'business_id') required this.businessId,
       required this.name,
       this.barcode,
       required this.price,
@@ -199,8 +199,8 @@ class _$ProductImpl implements _Product {
   @override
   final String id;
   @override
-  @JsonKey(name: 'store_id')
-  final String storeId;
+  @JsonKey(name: 'business_id')
+  final String businessId;
   @override
   final String name;
   @override
@@ -215,7 +215,7 @@ class _$ProductImpl implements _Product {
 
   @override
   String toString() {
-    return 'Product(id: $id, storeId: $storeId, name: $name, barcode: $barcode, price: $price, unit: $unit, updatedAt: $updatedAt)';
+    return 'Product(id: $id, businessId: $businessId, name: $name, barcode: $barcode, price: $price, unit: $unit, updatedAt: $updatedAt)';
   }
 
   @override
@@ -224,7 +224,8 @@ class _$ProductImpl implements _Product {
         (other.runtimeType == runtimeType &&
             other is _$ProductImpl &&
             (identical(other.id, id) || other.id == id) &&
-            (identical(other.storeId, storeId) || other.storeId == storeId) &&
+            (identical(other.businessId, businessId) ||
+                other.businessId == businessId) &&
             (identical(other.name, name) || other.name == name) &&
             (identical(other.barcode, barcode) || other.barcode == barcode) &&
             (identical(other.price, price) || other.price == price) &&
@@ -236,7 +237,7 @@ class _$ProductImpl implements _Product {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
-      runtimeType, id, storeId, name, barcode, price, unit, updatedAt);
+      runtimeType, id, businessId, name, barcode, price, unit, updatedAt);
 
   /// Create a copy of Product
   /// with the given fields replaced by the non-null parameter values.
@@ -257,7 +258,7 @@ class _$ProductImpl implements _Product {
 abstract class _Product implements Product {
   const factory _Product(
           {required final String id,
-          @JsonKey(name: 'store_id') required final String storeId,
+          @JsonKey(name: 'business_id') required final String businessId,
           required final String name,
           final String? barcode,
           required final double price,
@@ -270,8 +271,8 @@ abstract class _Product implements Product {
   @override
   String get id;
   @override
-  @JsonKey(name: 'store_id')
-  String get storeId;
+  @JsonKey(name: 'business_id')
+  String get businessId;
   @override
   String get name;
   @override

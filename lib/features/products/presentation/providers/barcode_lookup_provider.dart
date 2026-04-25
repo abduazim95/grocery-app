@@ -10,13 +10,13 @@ class BarcodeLookup extends _$BarcodeLookup {
   @override
   AsyncValue<Product?> build() => const AsyncData(null);
 
-  Future<void> lookup(String storeId, String barcode) async {
+  Future<void> lookup(String businessId, String barcode) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
       try {
         return await ref
             .read(productRepositoryProvider)
-            .getByBarcode(storeId: storeId, barcode: barcode);
+            .getByBarcode(businessId: businessId, barcode: barcode);
       } catch (e) {
         // 404 means not found — return null instead of error
         if (_is404(e)) return null;

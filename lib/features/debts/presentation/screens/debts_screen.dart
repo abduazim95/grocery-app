@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:grocery/core/providers/core_providers.dart';
+import 'package:grocery/core/router/app_routes.dart';
 import 'package:grocery/features/debts/presentation/providers/debts_provider.dart';
 import 'package:grocery/shared/models/debt.dart';
 import 'package:grocery/shared/utils/error_messages.dart';
@@ -41,7 +42,15 @@ class _DebtsScreenState extends ConsumerState<DebtsScreen> {
     final debtsAsync = ref.watch(debtsListProvider(storeId: _storeId));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Долговая книга')),
+      appBar: AppBar(
+        title: const Text('Долговая книга'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () => context.push(AppRoutes.settings),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showCreateSheet,
         child: const Icon(Icons.add),
@@ -199,7 +208,7 @@ class _CreateDebtSheetState extends ConsumerState<_CreateDebtSheet> {
             controller: _amountCtrl,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
-            decoration: const InputDecoration(labelText: 'Сумма долга *', suffixText: 'сум'),
+            decoration: const InputDecoration(labelText: 'Сумма долга *', suffixText: 'тг'),
           ),
           const SizedBox(height: 12),
           TextField(

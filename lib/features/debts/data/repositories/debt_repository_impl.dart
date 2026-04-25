@@ -26,6 +26,9 @@ class _DebtRepositoryImpl implements DebtRepository {
   Future<DebtRecord> getById(String id) => _ds.getById(id);
 
   @override
+  Future<List<DebtPayment>> listDebtPayments(String id) => _ds.listDebtPayments(id);
+
+  @override
   Future<DebtRecord> create({
     required String storeId,
     required String debtorName,

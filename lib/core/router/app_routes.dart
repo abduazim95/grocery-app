@@ -19,4 +19,5 @@ abstract class AppRoutes {
   static const stockTransfer = '/stock/transfer';
   static const newManager = '/admin/managers/new';
   static const profile = '/profile';
+  static const settings = '/settings';
 }

@@ -18,13 +18,13 @@ class AppDatabase extends _$AppDatabase {
   Future<void> upsertProducts(List<ProductsTableCompanion> rows) =>
       batch((b) => b.insertAllOnConflictUpdate(productsTable, rows));
 
-  Future<ProductsTableData?> findByBarcode(String storeId, String barcode) =>
+  Future<ProductsTableData?> findByBarcode(String businessId, String barcode) =>
       (select(productsTable)
-            ..where((t) => t.storeId.equals(storeId) & t.barcode.equals(barcode)))
+            ..where((t) => t.businessId.equals(businessId) & t.barcode.equals(barcode)))
           .getSingleOrNull();
 
-  Future<List<ProductsTableData>> getByStore(String storeId) =>
-      (select(productsTable)..where((t) => t.storeId.equals(storeId))).get();
+  Future<List<ProductsTableData>> getByBusiness(String businessId) =>
+      (select(productsTable)..where((t) => t.businessId.equals(businessId))).get();
 
   Future<void> evictStale() {
     final cutoff = DateTime.now().subtract(const Duration(minutes: 5));
@@ -49,7 +49,7 @@ LazyDatabase _openConnection() {
 extension ProductsTableDataX on ProductsTableData {
   Product toProduct() => Product(
         id: id,
-        storeId: storeId,
+        businessId: businessId,
         name: name,
         barcode: barcode,
         price: price,
@@ -61,7 +61,7 @@ extension ProductsTableDataX on ProductsTableData {
 extension ProductX on Product {
   ProductsTableCompanion toCompanion() => ProductsTableCompanion(
         id: Value(id),
-        storeId: Value(storeId),
+        businessId: Value(businessId),
         name: Value(name),
         barcode: Value(barcode),
         price: Value(price),

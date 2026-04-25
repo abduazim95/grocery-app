@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:grocery/core/providers/core_providers.dart';
+import 'package:grocery/core/router/app_routes.dart';
 import 'package:grocery/features/purchases/data/repositories/purchase_repository_impl.dart';
 import 'package:grocery/features/purchases/presentation/providers/purchases_provider.dart';
 import 'package:grocery/shared/models/purchase.dart';
@@ -59,6 +60,12 @@ class _PurchasesScreenState extends ConsumerState<PurchasesScreen>
     return Scaffold(
       appBar: AppBar(
         title: const Text('Закуп'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () => context.push(AppRoutes.settings),
+          ),
+        ],
         bottom: TabBar(
           controller: _tabCtrl,
           tabs: const [Tab(text: 'Открытые'), Tab(text: 'Закрытые')],

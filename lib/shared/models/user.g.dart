@@ -12,6 +12,7 @@ _$UserImpl _$$UserImplFromJson(Map<String, dynamic> json) => _$UserImpl(
       phone: json['phone'] as String,
       role: $enumDecode(_$UserRoleEnumMap, json['role']),
       storeId: json['store_id'] as String?,
+      businessId: json['business_id'] as String?,
       createdAt: DateTime.parse(json['created_at'] as String),
     );
 
@@ -22,6 +23,7 @@ Map<String, dynamic> _$$UserImplToJson(_$UserImpl instance) =>
       'phone': instance.phone,
       'role': _$UserRoleEnumMap[instance.role]!,
       'store_id': instance.storeId,
+      'business_id': instance.businessId,
       'created_at': instance.createdAt.toIso8601String(),
     };
 

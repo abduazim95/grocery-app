@@ -17,7 +17,15 @@ class SalesScreen extends ConsumerWidget {
     final salesAsync = ref.watch(salesListProvider(storeId));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Продажи')),
+      appBar: AppBar(
+        title: const Text('Продажи'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () => context.push(AppRoutes.settings),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.push(AppRoutes.newSale),
         child: const Icon(Icons.add),

@@ -1,6 +1,6 @@
 import 'package:grocery/core/api/app_exception.dart';
 
-String mapErrorCode(String code) => switch (code) {
+String mapErrorCode(String code, String message) => switch (code) {
       'bad_request' => 'Проверьте введённые данные',
       'not_found' => 'Ресурс не найден',
       'conflict' => 'Уже существует',
@@ -9,7 +9,7 @@ String mapErrorCode(String code) => switch (code) {
       'otp_invalid' => 'Неверный код подтверждения',
       'invalid_credentials' => 'Неверный телефон или пароль',
       'internal' => 'Ошибка сервера — попробуйте позже',
-      _ => 'Что-то пошло не так',
+      _ => message,
     };
 
 String mapException(Object e) {
@@ -17,7 +17,7 @@ String mapException(Object e) {
     return e.when(
       network: () => 'Нет подключения к интернету',
       unauthorized: () => 'Сессия истекла. Войдите снова',
-      server: (code, message, _) => mapErrorCode(code),
+      server: (code, message, _) => mapErrorCode(code, message),
     );
   }
   return 'Что-то пошло не так';

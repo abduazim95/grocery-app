@@ -24,13 +24,13 @@ class _ProductRepositoryImpl implements ProductRepository {
 
   @override
   Future<ProductListResult> listProducts({
-    required String storeId,
+    required String businessId,
     String query = '',
     int page = 1,
     int pageSize = 30,
   }) async {
     final result = await _ds.listProducts(
-      storeId: storeId,
+      businessId: businessId,
       query: query,
       page: page,
       pageSize: pageSize,
@@ -42,28 +42,28 @@ class _ProductRepositoryImpl implements ProductRepository {
 
   @override
   Future<Product> getByBarcode({
-    required String storeId,
+    required String businessId,
     required String barcode,
   }) async {
     // try cache first
-    final cached = await _db.findByBarcode(storeId, barcode);
+    final cached = await _db.findByBarcode(businessId, barcode);
     if (cached != null) return cached.toProduct();
     // fetch from API
-    final product = await _ds.getByBarcode(storeId: storeId, barcode: barcode);
+    final product = await _ds.getByBarcode(businessId: businessId, barcode: barcode);
     await _db.upsertProducts([product.toCompanion()]);
     return product;
   }
 
   @override
   Future<Product> create({
-    required String storeId,
+    required String businessId,
     required String name,
     required double price,
     required String unit,
     String? barcode,
   }) async {
     final product = await _ds.create(
-      storeId: storeId,
+      businessId: businessId,
       name: name,
       price: price,
       unit: unit,

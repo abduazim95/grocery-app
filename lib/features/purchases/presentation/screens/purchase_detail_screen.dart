@@ -193,7 +193,7 @@ class _AddItemSheetState extends ConsumerState<_AddItemSheet> {
   bool _isLoading = false;
   List<dynamic> _results = [];
 
-  String get _storeId => ref.read(authStateProvider).valueOrNull?.storeId ?? '';
+  String get _businessId => ref.read(authStateProvider).valueOrNull?.businessId ?? '';
 
   @override
   void dispose() {
@@ -207,7 +207,7 @@ class _AddItemSheetState extends ConsumerState<_AddItemSheet> {
     if (q.isEmpty) return;
     final r = await ref
         .read(productRepositoryProvider)
-        .listProducts(storeId: _storeId, query: q);
+        .listProducts(businessId: _businessId, query: q);
     setState(() => _results = r.products);
   }
 
@@ -298,7 +298,7 @@ class _AddItemSheetState extends ConsumerState<_AddItemSheet> {
                   controller: _priceCtrl,
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
-                  decoration: const InputDecoration(labelText: 'Цена', suffixText: 'сум'),
+                  decoration: const InputDecoration(labelText: 'Цена', suffixText: 'тг'),
                 ),
               ),
             ],

@@ -28,7 +28,7 @@ class AmountField extends StatelessWidget {
         labelText: label,
         hintText: hint,
         errorText: errorText,
-        suffixText: 'сум',
+        suffixText: 'тг',
       ),
     );
   }

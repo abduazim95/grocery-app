@@ -12,36 +12,36 @@ class ProductsListNotifier extends _$ProductsListNotifier {
   List<Product> _items = [];
 
   @override
-  Future<ProductListState> build(String storeId, {String query = ''}) async {
+  Future<ProductListState> build(String businessId, {String query = ''}) async {
     _page = 1;
     _items = [];
     _hasMore = true;
-    return _load(storeId, query);
+    return _load(businessId, query);
   }
 
-  Future<ProductListState> _load(String storeId, String query) async {
+  Future<ProductListState> _load(String businessId, String query) async {
     final result = await ref
         .read(productRepositoryProvider)
-        .listProducts(storeId: storeId, query: query, page: _page);
+        .listProducts(businessId: businessId, query: query, page: _page);
     _items = [..._items, ...result.products];
     _hasMore = _items.length < result.total;
     return ProductListState(items: _items, hasMore: _hasMore);
   }
 
-  Future<void> loadMore(String storeId, {String query = ''}) async {
+  Future<void> loadMore(String businessId, {String query = ''}) async {
     final current = state.valueOrNull;
     if (current == null || !current.hasMore) return;
     _page++;
     final prev = _items;
     try {
-      state = AsyncData(await _load(storeId, query));
+      state = AsyncData(await _load(businessId, query));
     } catch (_) {
       _items = prev;
       _page--;
     }
   }
 
-  Future<void> refresh(String storeId, {String query = ''}) async {
+  Future<void> refresh(String businessId, {String query = ''}) async {
     ref.invalidateSelf();
     await future;
   }

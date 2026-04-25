@@ -236,7 +236,7 @@ class _PaymentSheetState extends ConsumerState<_PaymentSheet> {
             autofocus: true,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
-            decoration: const InputDecoration(labelText: 'Сумма *', suffixText: 'сум'),
+            decoration: const InputDecoration(labelText: 'Сумма *', suffixText: 'тг'),
           ),
           const SizedBox(height: 12),
           TextField(

@@ -7,7 +7,7 @@ part of 'products_provider.dart';
 // **************************************************************************
 
 String _$productsListNotifierHash() =>
-    r'6919c206336212918b2eb0ff554ccfca4d5c6361';
+    r'7597c7bc244e075edfa308376aee47a7f73297a6';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -32,11 +32,11 @@ class _SystemHash {
 
 abstract class _$ProductsListNotifier
     extends BuildlessAutoDisposeAsyncNotifier<ProductListState> {
-  late final String storeId;
+  late final String businessId;
   late final String query;
 
   FutureOr<ProductListState> build(
-    String storeId, {
+    String businessId, {
     String query = '',
   });
 }
@@ -52,11 +52,11 @@ class ProductsListNotifierFamily extends Family<AsyncValue<ProductListState>> {
 
   /// See also [ProductsListNotifier].
   ProductsListNotifierProvider call(
-    String storeId, {
+    String businessId, {
     String query = '',
   }) {
     return ProductsListNotifierProvider(
-      storeId,
+      businessId,
       query: query,
     );
   }
@@ -66,7 +66,7 @@ class ProductsListNotifierFamily extends Family<AsyncValue<ProductListState>> {
     covariant ProductsListNotifierProvider provider,
   ) {
     return call(
-      provider.storeId,
+      provider.businessId,
       query: provider.query,
     );
   }
@@ -91,11 +91,11 @@ class ProductsListNotifierProvider extends AutoDisposeAsyncNotifierProviderImpl<
     ProductsListNotifier, ProductListState> {
   /// See also [ProductsListNotifier].
   ProductsListNotifierProvider(
-    String storeId, {
+    String businessId, {
     String query = '',
   }) : this._internal(
           () => ProductsListNotifier()
-            ..storeId = storeId
+            ..businessId = businessId
             ..query = query,
           from: productsListNotifierProvider,
           name: r'productsListNotifierProvider',
@@ -106,7 +106,7 @@ class ProductsListNotifierProvider extends AutoDisposeAsyncNotifierProviderImpl<
           dependencies: ProductsListNotifierFamily._dependencies,
           allTransitiveDependencies:
               ProductsListNotifierFamily._allTransitiveDependencies,
-          storeId: storeId,
+          businessId: businessId,
           query: query,
         );
 
@@ -117,11 +117,11 @@ class ProductsListNotifierProvider extends AutoDisposeAsyncNotifierProviderImpl<
     required super.allTransitiveDependencies,
     required super.debugGetCreateSourceHash,
     required super.from,
-    required this.storeId,
+    required this.businessId,
     required this.query,
   }) : super.internal();
 
-  final String storeId;
+  final String businessId;
   final String query;
 
   @override
@@ -129,7 +129,7 @@ class ProductsListNotifierProvider extends AutoDisposeAsyncNotifierProviderImpl<
     covariant ProductsListNotifier notifier,
   ) {
     return notifier.build(
-      storeId,
+      businessId,
       query: query,
     );
   }
@@ -140,14 +140,14 @@ class ProductsListNotifierProvider extends AutoDisposeAsyncNotifierProviderImpl<
       origin: this,
       override: ProductsListNotifierProvider._internal(
         () => create()
-          ..storeId = storeId
+          ..businessId = businessId
           ..query = query,
         from: from,
         name: null,
         dependencies: null,
         allTransitiveDependencies: null,
         debugGetCreateSourceHash: null,
-        storeId: storeId,
+        businessId: businessId,
         query: query,
       ),
     );
@@ -162,14 +162,14 @@ class ProductsListNotifierProvider extends AutoDisposeAsyncNotifierProviderImpl<
   @override
   bool operator ==(Object other) {
     return other is ProductsListNotifierProvider &&
-        other.storeId == storeId &&
+        other.businessId == businessId &&
         other.query == query;
   }
 
   @override
   int get hashCode {
     var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, storeId.hashCode);
+    hash = _SystemHash.combine(hash, businessId.hashCode);
     hash = _SystemHash.combine(hash, query.hashCode);
 
     return _SystemHash.finish(hash);
@@ -180,8 +180,8 @@ class ProductsListNotifierProvider extends AutoDisposeAsyncNotifierProviderImpl<
 // ignore: unused_element
 mixin ProductsListNotifierRef
     on AutoDisposeAsyncNotifierProviderRef<ProductListState> {
-  /// The parameter `storeId` of this provider.
-  String get storeId;
+  /// The parameter `businessId` of this provider.
+  String get businessId;
 
   /// The parameter `query` of this provider.
   String get query;
@@ -193,7 +193,7 @@ class _ProductsListNotifierProviderElement
   _ProductsListNotifierProviderElement(super.provider);
 
   @override
-  String get storeId => (origin as ProductsListNotifierProvider).storeId;
+  String get businessId => (origin as ProductsListNotifierProvider).businessId;
   @override
   String get query => (origin as ProductsListNotifierProvider).query;
 }

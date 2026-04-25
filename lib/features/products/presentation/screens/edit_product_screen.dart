@@ -15,9 +15,9 @@ part 'edit_product_screen.g.dart';
 const _units = ['шт', 'кг', 'л', 'уп', 'пачка'];
 
 @riverpod
-Future<Product?> productFromCache(Ref ref, String storeId, String productId) async {
+Future<Product?> productFromCache(Ref ref, String businessId, String productId) async {
   final db = ref.watch(appDatabaseProvider);
-  final rows = await db.getByStore(storeId);
+  final rows = await db.getByBusiness(businessId);
   try {
     return rows.firstWhere((r) => r.id == productId).toProduct();
   } catch (_) {
@@ -42,7 +42,7 @@ class _EditProductScreenState extends ConsumerState<EditProductScreen> {
   bool _isLoading = false;
   bool _initialized = false;
 
-  String get _storeId => ref.read(authStateProvider).valueOrNull?.storeId ?? '';
+  String get _businessId => ref.read(authStateProvider).valueOrNull?.businessId ?? '';
 
   void _initFrom(Product p) {
     if (_initialized) return;
@@ -94,7 +94,7 @@ class _EditProductScreenState extends ConsumerState<EditProductScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final productAsync = ref.watch(productFromCacheProvider(_storeId, widget.id));
+    final productAsync = ref.watch(productFromCacheProvider(_businessId, widget.id));
 
     return Scaffold(
       appBar: AppBar(title: const Text('Редактировать товар')),
@@ -122,7 +122,7 @@ class _EditProductScreenState extends ConsumerState<EditProductScreen> {
                   ],
                   decoration: const InputDecoration(
                     labelText: 'Цена *',
-                    suffixText: 'сум',
+                    suffixText: 'тг',
                   ),
                 ),
                 const SizedBox(height: 12),

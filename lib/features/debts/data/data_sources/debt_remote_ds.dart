@@ -15,6 +15,11 @@ class DebtRemoteDs {
     return unwrapList(response, (d) => DebtRecord.fromJson(d as Map<String, dynamic>));
   }
 
+  Future<List<DebtPayment>> listDebtPayments(String id) async {
+    final response = await _client.dio.get(Endpoints.debtPayments(id));
+    return unwrapList(response, (d) => DebtPayment.fromJson(d as Map<String, dynamic>));
+  }
+
   Future<DebtRecord> getById(String id) async {
     final response = await _client.dio.get(Endpoints.debtById(id));
     return unwrapData(response, (d) => DebtRecord.fromJson(d as Map<String, dynamic>));
