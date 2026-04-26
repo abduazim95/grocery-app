@@ -139,10 +139,19 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
             child: TextField(
               controller: _searchCtrl,
               onChanged: _onSearchChanged,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: 'Поиск по названию',
-                prefixIcon: Icon(Icons.search),
+                prefixIcon: const Icon(Icons.search),
                 isDense: true,
+                suffixIcon: _query.isEmpty
+                    ? null
+                    : IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          _searchCtrl.clear();
+                          setState(() => _query = '');
+                        },
+                      ),
               ),
             ),
           ),
@@ -160,9 +169,18 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                     .read(productsListNotifierProvider(businessId, query: _query).notifier)
                     .refresh(businessId, query: _query),
                 child: state.items.isEmpty
-                    ? const Center(child: Text('Товары не найдены'))
+                    ? LayoutBuilder(
+                        builder: (context, constraints) => SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          child: SizedBox(
+                            height: constraints.maxHeight,
+                            child: const Center(child: Text('Товары не найдены')),
+                          ),
+                        ),
+                      )
                     : ListView.builder(
                         controller: _scrollCtrl,
+                        physics: const AlwaysScrollableScrollPhysics(),
                         itemCount: state.items.length + (state.hasMore ? 1 : 0),
                         itemBuilder: (_, i) {
                           if (i == state.items.length) {
