@@ -5,6 +5,7 @@ import 'package:grocery/core/providers/core_providers.dart';
 import 'package:grocery/core/router/app_routes.dart';
 import 'package:grocery/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:grocery/shared/utils/error_messages.dart';
+import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -17,8 +18,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _phoneCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  final _phoneMask = MaskTextInputFormatter(
+    mask: '+7 (###) ###-##-##',
+    filter: {'#': RegExp(r'[0-9]')},
+  );
   bool _isLoading = false;
   bool _obscure = true;
+
+  String get _phoneNumber => _phoneCtrl.text.replaceAll(RegExp(r'[\s\-()]'), '');
 
   @override
   void dispose() {
@@ -32,7 +39,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     setState(() => _isLoading = true);
     try {
       final result = await ref.read(authRepositoryProvider).login(
-            phone: _phoneCtrl.text.trim(),
+            phone: _phoneNumber,
             password: _passCtrl.text,
           );
       await ref.read(authStateProvider.notifier).setUser(result.user, result.token);
@@ -89,14 +96,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 TextFormField(
                   controller: _phoneCtrl,
                   keyboardType: TextInputType.phone,
+                  inputFormatters: [_phoneMask],
                   decoration: const InputDecoration(
                     labelText: 'Телефон',
-                    hintText: '+998901234567',
+                    hintText: '+7 (700) 123-45-67',
                     prefixIcon: Icon(Icons.phone),
                   ),
                   validator: (v) {
                     if (v == null || v.isEmpty) return 'Введите номер телефона';
-                    if (!v.startsWith('+')) return 'Начните с +';
+                    if (!_phoneMask.isFill()) return 'Введите полный номер телефона';
                     return null;
                   },
                 ),

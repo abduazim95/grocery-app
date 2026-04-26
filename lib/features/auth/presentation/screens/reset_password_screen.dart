@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:grocery/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:grocery/shared/utils/error_messages.dart';
+import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
 class ResetPasswordScreen extends ConsumerStatefulWidget {
   const ResetPasswordScreen({super.key});
@@ -17,10 +18,16 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
   final _phoneCtrl = TextEditingController();
   final _otpCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
+  final _phoneMask = MaskTextInputFormatter(
+    mask: '+7 (###) ###-##-##',
+    filter: {'#': RegExp(r'[0-9]')},
+  );
   int _step = 1;
   bool _isLoading = false;
   int _countdown = 0;
   Timer? _timer;
+
+  String get _phoneNumber => _phoneCtrl.text.replaceAll(RegExp(r'[\s\-()]'), '');
 
   @override
   void dispose() {
@@ -48,7 +55,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
     try {
       await ref
           .read(authRepositoryProvider)
-          .sendOtp(phone: _phoneCtrl.text.trim(), purpose: 'reset_password');
+          .sendOtp(phone: _phoneNumber, purpose: 'reset_password');
       setState(() => _step = 2);
       _startCountdown();
     } catch (e) {
@@ -66,7 +73,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
     setState(() => _isLoading = true);
     try {
       await ref.read(authRepositoryProvider).resetPassword(
-            phone: _phoneCtrl.text.trim(),
+            phone: _phoneNumber,
             otp: _otpCtrl.text.trim(),
             newPassword: _passCtrl.text,
           );
@@ -102,9 +109,10 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
               TextField(
                 controller: _phoneCtrl,
                 keyboardType: TextInputType.phone,
+                inputFormatters: [_phoneMask],
                 decoration: const InputDecoration(
                   labelText: 'Телефон',
-                  hintText: '+998901234567',
+                  hintText: '+7 (700) 123-45-67',
                 ),
               ),
               const SizedBox(height: 24),
