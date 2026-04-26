@@ -34,7 +34,7 @@ class HomeShell extends ConsumerWidget {
         _Tab(AppRoutes.sales, Icons.point_of_sale_outlined, 'Продажи'),
         _Tab(AppRoutes.debts, Icons.account_balance_wallet_outlined, 'Долги'),
         _Tab(AppRoutes.purchases, Icons.local_shipping_outlined, 'Закуп'),
-        if (user != null && (user.isManager || user.isSuperAdmin))
+        if (user != null)
           _Tab(AppRoutes.more, Icons.more_horiz, 'Ещё'),
       ];
 

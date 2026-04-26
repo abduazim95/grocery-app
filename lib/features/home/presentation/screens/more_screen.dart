@@ -23,18 +23,20 @@ class MoreScreen extends ConsumerWidget {
       ),
       body: ListView(
         children: [
-          ListTile(
-            leading: const Icon(Icons.store_outlined),
-            title: const Text('Магазины'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => context.push(AppRoutes.stores),
-          ),
-          ListTile(
-            leading: const Icon(Icons.swap_horiz),
-            title: const Text('Перенос остатков'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => context.push(AppRoutes.stockTransfer),
-          ),
+          if (user?.isManager == true || user?.isSuperAdmin == true)
+            ListTile(
+              leading: const Icon(Icons.store_outlined),
+              title: const Text('Магазины'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.push(AppRoutes.stores),
+            ),
+          if (user?.isManager == true || user?.isSuperAdmin == true)
+            ListTile(
+              leading: const Icon(Icons.swap_horiz),
+              title: const Text('Перенос остатков'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.push(AppRoutes.stockTransfer),
+            ),
           if (user?.isSuperAdmin ?? false)
             ListTile(
               leading: const Icon(Icons.person_add_outlined),
