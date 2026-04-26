@@ -14,7 +14,7 @@ class ProductRemoteDs {
     int page = 1,
     int pageSize = 30,
   }) async {
-    final response = await _client.dio.get(
+    final response = await _client.get(
       Endpoints.products,
       queryParameters: {
         'business_id': businessId,
@@ -33,7 +33,7 @@ class ProductRemoteDs {
     required String businessId,
     required String barcode,
   }) async {
-    final response = await _client.dio.get(
+    final response = await _client.get(
       Endpoints.productBarcode(barcode),
       queryParameters: {'business_id': businessId},
     );
@@ -47,7 +47,7 @@ class ProductRemoteDs {
     required String unit,
     String? barcode,
   }) async {
-    final response = await _client.dio.post(
+    final response = await _client.post(
       Endpoints.products,
       queryParameters: {'business_id': businessId},
       data: {
@@ -67,7 +67,7 @@ class ProductRemoteDs {
     required String unit,
     String? barcode,
   }) async {
-    final response = await _client.dio.put(
+    final response = await _client.put(
       Endpoints.productById(id),
       data: {
         'name': name,

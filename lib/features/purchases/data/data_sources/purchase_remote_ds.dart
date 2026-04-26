@@ -8,7 +8,7 @@ class PurchaseRemoteDs {
   PurchaseRemoteDs(this._client);
 
   Future<List<PurchaseOrder>> listPurchases({String? storeId}) async {
-    final response = await _client.dio.get(
+    final response = await _client.get(
       Endpoints.purchases,
       queryParameters: storeId != null ? {'store_id': storeId} : {},
     );
@@ -16,12 +16,12 @@ class PurchaseRemoteDs {
   }
 
   Future<PurchaseOrder> getById(String id) async {
-    final response = await _client.dio.get(Endpoints.purchaseById(id));
+    final response = await _client.get(Endpoints.purchaseById(id));
     return unwrapData(response, (d) => PurchaseOrder.fromJson(d as Map<String, dynamic>));
   }
 
   Future<PurchaseOrder> create({required String storeId}) async {
-    final response = await _client.dio.post(
+    final response = await _client.post(
       Endpoints.purchases,
       data: {'store_id': storeId},
     );
@@ -34,7 +34,7 @@ class PurchaseRemoteDs {
     required double quantity,
     required double price,
   }) async {
-    final response = await _client.dio.post(
+    final response = await _client.post(
       Endpoints.purchaseItems(purchaseId),
       data: {'product_id': productId, 'quantity': quantity, 'price': price},
     );
@@ -48,7 +48,7 @@ class PurchaseRemoteDs {
     required double quantity,
     required double price,
   }) async {
-    final response = await _client.dio.put(
+    final response = await _client.put(
       Endpoints.purchaseItem(purchaseId, itemId),
       data: {'quantity': quantity, 'price': price},
     );
@@ -61,7 +61,7 @@ class PurchaseRemoteDs {
     required String itemId,
     required bool isBought,
   }) async {
-    final response = await _client.dio.patch(
+    final response = await _client.patch(
       Endpoints.purchaseItemBought(purchaseId, itemId),
       data: {'is_bought': isBought},
     );
@@ -69,7 +69,7 @@ class PurchaseRemoteDs {
   }
 
   Future<PurchaseOrder> close(String id) async {
-    final response = await _client.dio.post(Endpoints.purchaseClose(id));
+    final response = await _client.post(Endpoints.purchaseClose(id));
     return unwrapData(response, (d) => PurchaseOrder.fromJson(d as Map<String, dynamic>));
   }
 }

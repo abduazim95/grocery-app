@@ -12,7 +12,7 @@ class AuthRemoteDs {
   AuthRemoteDs(this._client);
 
   Future<void> sendOtp({required String phone, required String purpose}) async {
-    await _client.dio.post(
+    await _client.post(
       Endpoints.sendOtp,
       data: SendOtpRequest(phone: phone, purpose: purpose).toJson(),
     );
@@ -22,7 +22,7 @@ class AuthRemoteDs {
     required String phone,
     required String password,
   }) async {
-    final response = await _client.dio.post(
+    final response = await _client.post(
       Endpoints.login,
       data: LoginRequest(phone: phone, password: password).toJson(),
     );
@@ -35,7 +35,7 @@ class AuthRemoteDs {
     required String name,
     required String password,
   }) async {
-    final response = await _client.dio.post(
+    final response = await _client.post(
       Endpoints.register,
       data: RegisterRequest(phone: phone, otp: otp, name: name, password: password)
           .toJson(),
@@ -48,7 +48,7 @@ class AuthRemoteDs {
     required String otp,
     required String newPassword,
   }) async {
-    await _client.dio.post(
+    await _client.post(
       Endpoints.resetPassword,
       data: ResetPasswordRequest(phone: phone, otp: otp, newPassword: newPassword)
           .toJson(),

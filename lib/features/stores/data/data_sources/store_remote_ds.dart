@@ -9,12 +9,12 @@ class StoreRemoteDs {
   StoreRemoteDs(this._client);
 
   Future<List<Store>> listStores() async {
-    final response = await _client.dio.get(Endpoints.stores);
+    final response = await _client.get(Endpoints.stores);
     return unwrapList(response, (d) => Store.fromJson(d as Map<String, dynamic>));
   }
 
   Future<Store> create({required String name, String? address}) async {
-    final response = await _client.dio.post(
+    final response = await _client.post(
       Endpoints.stores,
       data: {'name': name, if (address != null && address.isNotEmpty) 'address': address},
     );
@@ -27,7 +27,7 @@ class StoreRemoteDs {
     required String phone,
     required String password,
   }) async {
-    final response = await _client.dio.post(
+    final response = await _client.post(
       Endpoints.storeSellers(storeId),
       data: {'name': name, 'phone': phone, 'password': password},
     );

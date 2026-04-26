@@ -8,7 +8,7 @@ class StockRemoteDs {
   StockRemoteDs(this._client);
 
   Future<List<StockItem>> getStock(String storeId) async {
-    final response = await _client.dio.get(Endpoints.storeStock(storeId));
+    final response = await _client.get(Endpoints.storeStock(storeId));
     return unwrapList(response, (d) => StockItem.fromJson(d as Map<String, dynamic>));
   }
 
@@ -17,7 +17,7 @@ class StockRemoteDs {
     required String productId,
     required double quantity,
   }) async {
-    final response = await _client.dio.put(
+    final response = await _client.put(
       Endpoints.storeStock(storeId),
       data: {'product_id': productId, 'quantity': quantity},
     );
@@ -30,7 +30,7 @@ class StockRemoteDs {
     required String productId,
     required double quantity,
   }) async {
-    await _client.dio.post(
+    await _client.post(
       Endpoints.stockTransfer,
       data: {
         'from_store_id': fromStoreId,

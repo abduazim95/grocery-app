@@ -8,7 +8,7 @@ class DebtRemoteDs {
   DebtRemoteDs(this._client);
 
   Future<List<DebtRecord>> listDebts({String? storeId}) async {
-    final response = await _client.dio.get(
+    final response = await _client.get(
       Endpoints.debts,
       queryParameters: storeId != null ? {'store_id': storeId} : {},
     );
@@ -16,12 +16,12 @@ class DebtRemoteDs {
   }
 
   Future<List<DebtPayment>> listDebtPayments(String id) async {
-    final response = await _client.dio.get(Endpoints.debtPayments(id));
+    final response = await _client.get(Endpoints.debtPayments(id));
     return unwrapList(response, (d) => DebtPayment.fromJson(d as Map<String, dynamic>));
   }
 
   Future<DebtRecord> getById(String id) async {
-    final response = await _client.dio.get(Endpoints.debtById(id));
+    final response = await _client.get(Endpoints.debtById(id));
     return unwrapData(response, (d) => DebtRecord.fromJson(d as Map<String, dynamic>));
   }
 
@@ -32,7 +32,7 @@ class DebtRemoteDs {
     required double amount,
     String? description,
   }) async {
-    final response = await _client.dio.post(
+    final response = await _client.post(
       Endpoints.debts,
       data: {
         'store_id': storeId,
@@ -51,7 +51,7 @@ class DebtRemoteDs {
     String? debtorPhone,
     String? description,
   }) async {
-    final response = await _client.dio.put(
+    final response = await _client.put(
       Endpoints.debtById(id),
       data: {
         'debtor_name': debtorName,
@@ -67,7 +67,7 @@ class DebtRemoteDs {
     required double amount,
     String? note,
   }) async {
-    final response = await _client.dio.post(
+    final response = await _client.post(
       Endpoints.debtPayments(id),
       data: {
         'amount': amount,
@@ -78,6 +78,6 @@ class DebtRemoteDs {
   }
 
   Future<void> delete(String id) async {
-    await _client.dio.delete(Endpoints.debtById(id));
+    await _client.delete(Endpoints.debtById(id));
   }
 }

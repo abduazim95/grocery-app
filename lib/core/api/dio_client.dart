@@ -23,6 +23,56 @@ class DioClient {
       if (kDebugMode) LogInterceptor(requestBody: true, responseBody: true),
     ]);
   }
+
+  Future<Response<T>> get<T>(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+  }) =>
+      _guard(() => dio.get(path, queryParameters: queryParameters, options: options));
+
+  Future<Response<T>> post<T>(
+    String path, {
+    Object? data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+  }) =>
+      _guard(() => dio.post(path, data: data, queryParameters: queryParameters, options: options));
+
+  Future<Response<T>> put<T>(
+    String path, {
+    Object? data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+  }) =>
+      _guard(() => dio.put(path, data: data, queryParameters: queryParameters, options: options));
+
+  Future<Response<T>> patch<T>(
+    String path, {
+    Object? data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+  }) =>
+      _guard(
+          () => dio.patch(path, data: data, queryParameters: queryParameters, options: options));
+
+  Future<Response<T>> delete<T>(
+    String path, {
+    Object? data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+  }) =>
+      _guard(
+          () => dio.delete(path, data: data, queryParameters: queryParameters, options: options));
+
+  Future<Response<T>> _guard<T>(Future<Response<T>> Function() call) async {
+    try {
+      return await call();
+    } on DioException catch (e) {
+      if (e.error is AppException) throw e.error! as AppException;
+      rethrow;
+    }
+  }
 }
 
 class AuthInterceptor extends Interceptor {
@@ -88,9 +138,10 @@ class ErrorInterceptor extends Interceptor {
 
   AppException _parseServerError(Response response) {
     final body = response.data as Map<String, dynamic>?;
+
     return AppException.server(
-      code: body?['code'] as String? ?? 'internal',
-      message: body?['message'] as String? ?? 'Ошибка сервера',
+      code: body?['error']['code'] as String? ?? 'internal',
+      message: body?['error']['message'] as String? ?? 'Ошибка сервера',
       status: response.statusCode ?? 500,
     );
   }

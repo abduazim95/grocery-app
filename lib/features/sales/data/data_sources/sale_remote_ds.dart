@@ -8,7 +8,7 @@ class SaleRemoteDs {
   SaleRemoteDs(this._client);
 
   Future<List<Sale>> listSales({required String storeId}) async {
-    final response = await _client.dio.get(
+    final response = await _client.get(
       Endpoints.sales,
       queryParameters: {'store_id': storeId},
     );
@@ -19,7 +19,7 @@ class SaleRemoteDs {
     required String storeId,
     required List<Map<String, dynamic>> items,
   }) async {
-    final response = await _client.dio.post(
+    final response = await _client.post(
       Endpoints.sales,
       queryParameters: {'store_id': storeId},
       data: {'items': items},

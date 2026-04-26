@@ -12,7 +12,7 @@ class AdminRemoteDs {
     required String phone,
     required String password,
   }) async {
-    final response = await _client.dio.post(
+    final response = await _client.post(
       Endpoints.managers,
       data: {'name': name, 'phone': phone, 'password': password},
     );
