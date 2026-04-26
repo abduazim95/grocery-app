@@ -9,13 +9,19 @@ class BarcodeScannerScreen extends StatefulWidget {
   State<BarcodeScannerScreen> createState() => _BarcodeScannerScreenState();
 }
 
-class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
-  final MobileScannerController _controller = MobileScannerController();
+class _BarcodeScannerScreenState extends State<BarcodeScannerScreen>
+    with SingleTickerProviderStateMixin {
+  final MobileScannerController _scanner = MobileScannerController();
+  late final AnimationController _animation = AnimationController(
+    duration: const Duration(seconds: 2),
+    vsync: this,
+  )..repeat(reverse: true);
   bool _detected = false;
 
   @override
   void dispose() {
-    _controller.dispose();
+    _scanner.dispose();
+    _animation.dispose();
     super.dispose();
   }
 
@@ -40,14 +46,14 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.flash_on),
-            onPressed: () => _controller.toggleTorch(),
+            onPressed: _scanner.toggleTorch,
           ),
         ],
       ),
       body: Stack(
         children: [
-          MobileScanner(controller: _controller, onDetect: _onDetect),
-          _ScannerOverlay(),
+          MobileScanner(controller: _scanner, onDetect: _onDetect),
+          _ScannerOverlay(animation: _animation),
           Positioned(
             bottom: 48,
             left: 0,
@@ -69,99 +75,53 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
   }
 }
 
-class _ScannerOverlay extends StatefulWidget {
-  const _ScannerOverlay({super.key});
+class _ScannerOverlay extends StatelessWidget {
+  const _ScannerOverlay({required this.animation});
 
-  @override
-  State<_ScannerOverlay> createState() => _ScannerOverlayState();
-}
-
-class _ScannerOverlayState extends State<_ScannerOverlay>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    // Анимация для сканирующей линии
-    _controller = AnimationController(
-      duration: const Duration(seconds: 2),
-      vsync: this,
-    )..repeat(reverse: true);
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
+  final Animation<double> animation;
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        // 1. Затемненный фон с прорезью
-        Stack(
-          fit: StackFit.expand,
-          children: [
-            Center(
-              child: Container(
-                width: 280,
-                height: 180,
-                decoration: BoxDecoration(
-                  color: Colors.transparent, // Цвет не важен из-за srcOut
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-          ],
-        ),
-        // 2. Рамка и анимация
         Center(
           child: SizedBox(
             width: 280,
             height: 180,
             child: Stack(
               children: [
-                // Угловые скобки (CustomPainter для красоты)
-                Positioned.fill(
-                    child: CustomPaint(painter: _ScannerBorderPainter())),
-
-                // Анимированная линия
+                Positioned.fill(child: CustomPaint(painter: _ScannerBorderPainter())),
                 AnimatedBuilder(
-                  animation: _controller,
-                  builder: (context, child) {
-                    return Positioned(
-                      top: 180 * _controller.value,
-                      left: 10,
-                      right: 10,
-                      child: Container(
-                        height: 2,
-                        decoration: BoxDecoration(
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.greenAccent.withAlpha(200),
-                              blurRadius: 10,
-                              spreadRadius: 2,
-                            )
-                          ],
-                          color: Colors.greenAccent,
-                        ),
+                  animation: animation,
+                  builder: (context, _) => Positioned(
+                    top: 178 * animation.value,
+                    left: 10,
+                    right: 10,
+                    child: Container(
+                      height: 2,
+                      decoration: BoxDecoration(
+                        color: Colors.greenAccent,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.greenAccent.withAlpha(200),
+                            blurRadius: 10,
+                            spreadRadius: 2,
+                          ),
+                        ],
                       ),
-                    );
-                  },
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
         ),
-        // 3. Подсказка снизу
         const Align(
           alignment: Alignment.bottomCenter,
           child: Padding(
-            padding: EdgeInsets.all(80.0),
+            padding: EdgeInsets.all(80),
             child: Text(
-              "Поместите QR-код в рамку",
+              'Поместите QR-код в рамку',
               style: TextStyle(color: Colors.white70, fontSize: 16),
             ),
           ),
@@ -179,28 +139,20 @@ class _ScannerBorderPainter extends CustomPainter {
       ..strokeWidth = 4
       ..style = PaintingStyle.stroke;
 
-    final path = Path();
-    double cornerSize = 20;
-
-    // Топ-лево
-    path.moveTo(0, cornerSize);
-    path.lineTo(0, 0);
-    path.lineTo(cornerSize, 0);
-
-    // Топ-право
-    path.moveTo(size.width - cornerSize, 0);
-    path.lineTo(size.width, 0);
-    path.lineTo(size.width, cornerSize);
-
-    // Низ-право
-    path.moveTo(size.width, size.height - cornerSize);
-    path.lineTo(size.width, size.height);
-    path.lineTo(size.width - cornerSize, size.height);
-
-    // Низ-лево
-    path.moveTo(cornerSize, size.height);
-    path.lineTo(0, size.height);
-    path.lineTo(0, size.height - cornerSize);
+    const c = 20.0;
+    final path = Path()
+      ..moveTo(0, c)
+      ..lineTo(0, 0)
+      ..lineTo(c, 0)
+      ..moveTo(size.width - c, 0)
+      ..lineTo(size.width, 0)
+      ..lineTo(size.width, c)
+      ..moveTo(size.width, size.height - c)
+      ..lineTo(size.width, size.height)
+      ..lineTo(size.width - c, size.height)
+      ..moveTo(c, size.height)
+      ..lineTo(0, size.height)
+      ..lineTo(0, size.height - c);
 
     canvas.drawPath(path, paint);
   }
