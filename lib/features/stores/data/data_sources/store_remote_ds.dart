@@ -21,15 +21,42 @@ class StoreRemoteDs {
     return unwrapData(response, (d) => Store.fromJson(d as Map<String, dynamic>));
   }
 
+  Future<List<User>> listSellers(String storeId) async {
+    final response = await _client.get(Endpoints.storeSellers(storeId));
+    return unwrapList(response, (d) => User.fromJson(d as Map<String, dynamic>));
+  }
+
   Future<User> addSeller({
     required String storeId,
     required String name,
     required String phone,
-    required String password,
+    String? password,
   }) async {
     final response = await _client.post(
       Endpoints.storeSellers(storeId),
-      data: {'name': name, 'phone': phone, 'password': password},
+      data: {
+        'name': name,
+        'phone': phone,
+        if (password != null && password.isNotEmpty) 'password': password,
+      },
+    );
+    return unwrapData(response, (d) => User.fromJson(d as Map<String, dynamic>));
+  }
+
+  Future<void> removeSeller({
+    required String storeId,
+    required String sellerId,
+  }) async {
+    await _client.delete(Endpoints.storeSeller(storeId, sellerId));
+  }
+
+  Future<User> assignSeller({
+    required String newStoreId,
+    required String sellerId,
+  }) async {
+    final response = await _client.put(
+      Endpoints.storeSellerAssign(newStoreId),
+      data: {'seller_id': sellerId},
     );
     return unwrapData(response, (d) => User.fromJson(d as Map<String, dynamic>));
   }

@@ -72,6 +72,12 @@ class AuthState extends _$AuthState {
     state = AsyncData(user);
   }
 
+  Future<void> updateUser(User user) async {
+    final storage = ref.read(secureStorageProvider);
+    await storage.setUser(user);
+    state = AsyncData(user);
+  }
+
   Future<void> logout() async {
     await ref.read(secureStorageProvider).clear();
     state = const AsyncData(null);

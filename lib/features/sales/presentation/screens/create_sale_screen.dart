@@ -9,6 +9,7 @@ import 'package:grocery/core/providers/core_providers.dart';
 import 'package:grocery/features/products/data/repositories/product_repository_impl.dart';
 import 'package:grocery/features/sales/presentation/providers/create_sale_provider.dart';
 import 'package:grocery/features/sales/presentation/providers/sales_provider.dart';
+import 'package:grocery/features/stores/data/repositories/store_repository_impl.dart';
 import 'package:grocery/shared/models/product.dart';
 import 'package:grocery/shared/models/sale.dart';
 import 'package:grocery/shared/utils/error_messages.dart';
@@ -28,8 +29,10 @@ class _CreateSaleScreenState extends ConsumerState<CreateSaleScreen> {
   bool _isSearching = false;
   List<Product> _searchResults = [];
   Timer? _debounce;
+  String? _selectedStoreId;
 
-  String get _storeId => ref.read(authStateProvider).valueOrNull?.storeId ?? '';
+  bool get _isManager => ref.read(authStateProvider).valueOrNull?.isManager ?? false;
+  String get _storeId => _isManager ? (_selectedStoreId ?? '') : (ref.read(authStateProvider).valueOrNull?.storeId ?? '');
   String get _businessId => ref.read(authStateProvider).valueOrNull?.businessId ?? '';
 
   @override
@@ -93,6 +96,12 @@ class _CreateSaleScreenState extends ConsumerState<CreateSaleScreen> {
   Future<void> _submit() async {
     final items = ref.read(createSaleProvider);
     if (items.isEmpty) return;
+    if (_storeId.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Выберите магазин'), backgroundColor: Colors.orange),
+      );
+      return;
+    }
 
     setState(() => _isSubmitting = true);
     try {
@@ -163,6 +172,14 @@ class _CreateSaleScreenState extends ConsumerState<CreateSaleScreen> {
       ),
       body: Column(
         children: [
+          if (_isManager)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+              child: _StoreSelector(
+                selectedStoreId: _selectedStoreId,
+                onChanged: (id) => setState(() => _selectedStoreId = id),
+              ),
+            ),
           Padding(
             padding: const EdgeInsets.all(8),
             child: Row(
@@ -412,6 +429,33 @@ class _SaleItemTileState extends State<_SaleItemTile> {
             onPressed: widget.onRemove,
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _StoreSelector extends ConsumerWidget {
+  final String? selectedStoreId;
+  final void Function(String?) onChanged;
+
+  const _StoreSelector({required this.selectedStoreId, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final storesAsync = ref.watch(storesListProvider);
+    return storesAsync.when(
+      loading: () => const LinearProgressIndicator(),
+      error: (_, __) => const SizedBox.shrink(),
+      data: (stores) => DropdownButtonFormField<String>(
+        value: selectedStoreId,
+        decoration: const InputDecoration(
+          labelText: 'Магазин *',
+          isDense: true,
+        ),
+        items: stores
+            .map((s) => DropdownMenuItem(value: s.id, child: Text(s.name)))
+            .toList(),
+        onChanged: onChanged,
       ),
     );
   }

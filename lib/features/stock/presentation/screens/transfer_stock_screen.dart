@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:grocery/core/providers/core_providers.dart';
+import 'package:grocery/features/products/data/repositories/product_repository_impl.dart';
 import 'package:grocery/features/stock/data/repositories/stock_repository_impl.dart';
 import 'package:grocery/features/stores/data/repositories/store_repository_impl.dart';
-import 'package:grocery/features/products/data/repositories/product_repository_impl.dart';
-import 'package:grocery/core/providers/core_providers.dart';
 import 'package:grocery/shared/models/product.dart';
-import 'package:grocery/shared/models/store.dart';
 import 'package:grocery/shared/utils/error_messages.dart';
+import 'package:grocery/shared/widgets/barcode_scanner_screen.dart';
 
 class TransferStockScreen extends ConsumerStatefulWidget {
   const TransferStockScreen({super.key});
@@ -27,7 +27,6 @@ class _TransferStockScreenState extends ConsumerState<TransferStockScreen> {
   bool _isLoading = false;
   List<Product> _searchResults = [];
 
-  String get _storeId => ref.read(authStateProvider).valueOrNull?.storeId ?? '';
   String get _businessId => ref.read(authStateProvider).valueOrNull?.businessId ?? '';
 
   @override
@@ -38,10 +37,42 @@ class _TransferStockScreenState extends ConsumerState<TransferStockScreen> {
   }
 
   Future<void> _search(String q) async {
+    if (q.isEmpty) {
+      setState(() => _searchResults = []);
+      return;
+    }
     final r = await ref
         .read(productRepositoryProvider)
         .listProducts(businessId: _businessId, query: q);
     setState(() => _searchResults = r.products);
+  }
+
+  Future<void> _onBarcodeScanned() async {
+    final barcode = await Navigator.push<String?>(
+      context,
+      MaterialPageRoute(builder: (_) => const BarcodeScannerScreen()),
+    );
+    if (barcode == null || !mounted) return;
+    try {
+      final product = await ref
+          .read(productRepositoryProvider)
+          .getByBarcode(businessId: _businessId, barcode: barcode);
+      setState(() {
+        _productId = product.id;
+        _productName = product.name;
+        _searchCtrl.text = product.name;
+        _searchResults = [];
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Товар не найден: $barcode'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _transfer() async {
@@ -111,14 +142,26 @@ class _TransferStockScreenState extends ConsumerState<TransferStockScreen> {
                 onChanged: (v) => setState(() => _toStoreId = v),
               ),
               const SizedBox(height: 12),
-              TextField(
-                controller: _searchCtrl,
-                onChanged: _search,
-                decoration: const InputDecoration(
-                  labelText: 'Поиск товара',
-                  prefixIcon: Icon(Icons.search),
-                ),
-                enabled: _fromStoreId != null,
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _searchCtrl,
+                      onChanged: _search,
+                      decoration: const InputDecoration(
+                        labelText: 'Поиск товара',
+                        prefixIcon: Icon(Icons.search),
+                      ),
+                      enabled: _fromStoreId != null,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton.outlined(
+                    onPressed: _fromStoreId != null ? _onBarcodeScanned : null,
+                    icon: const Icon(Icons.qr_code_scanner),
+                    tooltip: 'Сканировать штрихкод',
+                  ),
+                ],
               ),
               if (_searchResults.isNotEmpty)
                 Card(
@@ -145,8 +188,11 @@ class _TransferStockScreenState extends ConsumerState<TransferStockScreen> {
                   ),
                 ),
               if (_productName != null)
-                Text('Товар: $_productName',
-                    style: const TextStyle(color: Colors.green)),
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Text('Товар: $_productName',
+                      style: const TextStyle(color: Colors.green)),
+                ),
               const SizedBox(height: 12),
               TextField(
                 controller: _qtyCtrl,
@@ -158,9 +204,7 @@ class _TransferStockScreenState extends ConsumerState<TransferStockScreen> {
               FilledButton(
                 onPressed: _isLoading ? null : _transfer,
                 child: _isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
+                    ? const SizedBox(height: 20, width: 20,
                         child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                     : const Text('Перенести'),
               ),

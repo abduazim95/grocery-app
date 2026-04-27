@@ -16,3 +16,7 @@ StoreRemoteDs storeRepository(Ref ref) {
 @riverpod
 Future<List<Store>> storesList(Ref ref) =>
     ref.watch(storeRepositoryProvider).listStores();
+
+@riverpod
+Future<List<User>> storeSellers(Ref ref, String storeId) =>
+    ref.watch(storeRepositoryProvider).listSellers(storeId);

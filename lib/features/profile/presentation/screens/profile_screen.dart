@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:grocery/core/providers/core_providers.dart';
+import 'package:grocery/features/profile/data/repositories/profile_repository_impl.dart';
 import 'package:grocery/shared/utils/error_messages.dart';
 import 'package:grocery/shared/widgets/confirm_dialog.dart';
 
@@ -26,6 +27,17 @@ class ProfileScreen extends ConsumerWidget {
               ),
             ),
             const Divider(),
+            ListTile(
+              leading: const Icon(Icons.edit_outlined),
+              title: const Text('Изменить имя'),
+              onTap: () => _showChangeName(context, ref, user.name),
+            ),
+            ListTile(
+              leading: const Icon(Icons.lock_outline),
+              title: const Text('Изменить пароль'),
+              onTap: () => _showChangePassword(context, ref),
+            ),
+            const Divider(),
           ],
           ListTile(
             leading: const Icon(Icons.cleaning_services_outlined),
@@ -40,6 +52,22 @@ class ProfileScreen extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+
+  void _showChangeName(BuildContext context, WidgetRef ref, String currentName) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => _ChangeNameSheet(currentName: currentName),
+    );
+  }
+
+  void _showChangePassword(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => const _ChangePasswordSheet(),
     );
   }
 
@@ -77,5 +105,190 @@ class ProfileScreen extends ConsumerWidget {
     );
     if (!ok) return;
     await ref.read(authStateProvider.notifier).logout();
+  }
+}
+
+class _ChangeNameSheet extends ConsumerStatefulWidget {
+  final String currentName;
+
+  const _ChangeNameSheet({required this.currentName});
+
+  @override
+  ConsumerState<_ChangeNameSheet> createState() => _ChangeNameSheetState();
+}
+
+class _ChangeNameSheetState extends ConsumerState<_ChangeNameSheet> {
+  late final TextEditingController _ctrl;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = TextEditingController(text: widget.currentName);
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    final name = _ctrl.text.trim();
+    if (name.length < 2) return;
+    setState(() => _isLoading = true);
+    try {
+      final updated = await ref.read(profileRepositoryProvider).updateName(name);
+      await ref.read(authStateProvider.notifier).updateUser(updated);
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Имя обновлено')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(mapException(e)), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(16, 16, 16, MediaQuery.of(context).viewInsets.bottom + 16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text('Изменить имя',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _ctrl,
+            autofocus: true,
+            decoration: const InputDecoration(labelText: 'Имя'),
+          ),
+          const SizedBox(height: 16),
+          FilledButton(
+            onPressed: _isLoading ? null : _save,
+            child: _isLoading
+                ? const SizedBox(height: 20, width: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                : const Text('Сохранить'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ChangePasswordSheet extends ConsumerStatefulWidget {
+  const _ChangePasswordSheet();
+
+  @override
+  ConsumerState<_ChangePasswordSheet> createState() => _ChangePasswordSheetState();
+}
+
+class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
+  final _oldCtrl = TextEditingController();
+  final _newCtrl = TextEditingController();
+  final _confirmCtrl = TextEditingController();
+  bool _isLoading = false;
+  String? _confirmError;
+
+  @override
+  void dispose() {
+    _oldCtrl.dispose();
+    _newCtrl.dispose();
+    _confirmCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    if (_newCtrl.text != _confirmCtrl.text) {
+      setState(() => _confirmError = 'Пароли не совпадают');
+      return;
+    }
+    setState(() => _confirmError = null);
+
+    if (_oldCtrl.text.isEmpty || _newCtrl.text.length < 6) return;
+
+    setState(() => _isLoading = true);
+    try {
+      await ref.read(profileRepositoryProvider).changePassword(
+            oldPassword: _oldCtrl.text,
+            newPassword: _newCtrl.text,
+            confirmPassword: _confirmCtrl.text,
+          );
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Пароль изменён')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(mapException(e)), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(16, 16, 16, MediaQuery.of(context).viewInsets.bottom + 16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text('Изменить пароль',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _oldCtrl,
+            obscureText: true,
+            decoration: const InputDecoration(labelText: 'Текущий пароль'),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _newCtrl,
+            obscureText: true,
+            decoration: const InputDecoration(
+              labelText: 'Новый пароль',
+              helperText: 'Минимум 6 символов',
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _confirmCtrl,
+            obscureText: true,
+            onChanged: (_) {
+              if (_confirmError != null) setState(() => _confirmError = null);
+            },
+            decoration: InputDecoration(
+              labelText: 'Подтверждение пароля',
+              errorText: _confirmError,
+            ),
+          ),
+          const SizedBox(height: 16),
+          FilledButton(
+            onPressed: _isLoading ? null : _save,
+            child: _isLoading
+                ? const SizedBox(height: 20, width: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                : const Text('Изменить пароль'),
+          ),
+        ],
+      ),
+    );
   }
 }

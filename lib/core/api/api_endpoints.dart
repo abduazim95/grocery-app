@@ -28,10 +28,16 @@ abstract class Endpoints {
   static const stores = '/v1/stores';
   static String storeById(String id) => '/v1/stores/$id';
   static String storeSellers(String id) => '/v1/stores/$id/sellers';
+  static String storeSeller(String id, String sid) => '/v1/stores/$id/sellers/$sid';
+  static String storeSellerAssign(String id) => '/v1/stores/$id/sellers/assign';
   static String storeStock(String id) => '/v1/stores/$id/stock';
   // Stock
   static const stockTransfer = '/v1/stock/transfer';
+  // Profile
+  static const profile = '/v1/profile';
+  static const profilePassword = '/v1/profile/password';
   // Admin
+  static const businesses = '/v1/admin/businesses';
   static const managers = '/v1/admin/managers';
   static String userById(String id) => '/v1/admin/users/$id';
 }

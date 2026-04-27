@@ -26,6 +26,7 @@ import 'package:grocery/features/settings/presentation/screens/settings_screen.d
 import 'package:grocery/features/stock/presentation/screens/stock_screen.dart';
 import 'package:grocery/features/stock/presentation/screens/transfer_stock_screen.dart';
 import 'package:grocery/features/stores/presentation/screens/create_store_screen.dart';
+import 'package:grocery/features/stores/presentation/screens/store_detail_screen.dart';
 import 'package:grocery/features/stores/presentation/screens/stores_screen.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -130,6 +131,13 @@ GoRouter appRouter(Ref ref) {
       ),
       GoRoute(path: AppRoutes.stores, builder: (_, __) => const StoresScreen()),
       GoRoute(path: AppRoutes.createStore, builder: (_, __) => const CreateStoreScreen()),
+      GoRoute(
+        path: AppRoutes.storeDetail,
+        builder: (_, s) => StoreDetailScreen(
+          storeId: s.pathParameters['id']!,
+          storeName: (s.extra as String?) ?? 'Магазин',
+        ),
+      ),
       GoRoute(
         path: AppRoutes.storeStock,
         builder: (_, s) => StockScreen(storeId: s.pathParameters['id']!),

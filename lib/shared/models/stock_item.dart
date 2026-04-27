@@ -12,6 +12,7 @@ class StockItem with _$StockItem {
     @JsonKey(name: 'product_id') required String productId,
     Product? product,
     required double quantity,
+    @Default(0.0) @JsonKey(name: 'min_quantity') double minQuantity,
     @JsonKey(name: 'updated_at') required DateTime updatedAt,
   }) = _StockItem;
 

@@ -27,6 +27,8 @@ mixin _$StockItem {
   String get productId => throw _privateConstructorUsedError;
   Product? get product => throw _privateConstructorUsedError;
   double get quantity => throw _privateConstructorUsedError;
+  @JsonKey(name: 'min_quantity')
+  double get minQuantity => throw _privateConstructorUsedError;
   @JsonKey(name: 'updated_at')
   DateTime get updatedAt => throw _privateConstructorUsedError;
 
@@ -51,6 +53,7 @@ abstract class $StockItemCopyWith<$Res> {
       @JsonKey(name: 'product_id') String productId,
       Product? product,
       double quantity,
+      @JsonKey(name: 'min_quantity') double minQuantity,
       @JsonKey(name: 'updated_at') DateTime updatedAt});
 
   $ProductCopyWith<$Res>? get product;
@@ -76,6 +79,7 @@ class _$StockItemCopyWithImpl<$Res, $Val extends StockItem>
     Object? productId = null,
     Object? product = freezed,
     Object? quantity = null,
+    Object? minQuantity = null,
     Object? updatedAt = null,
   }) {
     return _then(_value.copyWith(
@@ -98,6 +102,10 @@ class _$StockItemCopyWithImpl<$Res, $Val extends StockItem>
       quantity: null == quantity
           ? _value.quantity
           : quantity // ignore: cast_nullable_to_non_nullable
+              as double,
+      minQuantity: null == minQuantity
+          ? _value.minQuantity
+          : minQuantity // ignore: cast_nullable_to_non_nullable
               as double,
       updatedAt: null == updatedAt
           ? _value.updatedAt
@@ -135,6 +143,7 @@ abstract class _$$StockItemImplCopyWith<$Res>
       @JsonKey(name: 'product_id') String productId,
       Product? product,
       double quantity,
+      @JsonKey(name: 'min_quantity') double minQuantity,
       @JsonKey(name: 'updated_at') DateTime updatedAt});
 
   @override
@@ -159,6 +168,7 @@ class __$$StockItemImplCopyWithImpl<$Res>
     Object? productId = null,
     Object? product = freezed,
     Object? quantity = null,
+    Object? minQuantity = null,
     Object? updatedAt = null,
   }) {
     return _then(_$StockItemImpl(
@@ -182,6 +192,10 @@ class __$$StockItemImplCopyWithImpl<$Res>
           ? _value.quantity
           : quantity // ignore: cast_nullable_to_non_nullable
               as double,
+      minQuantity: null == minQuantity
+          ? _value.minQuantity
+          : minQuantity // ignore: cast_nullable_to_non_nullable
+              as double,
       updatedAt: null == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
@@ -199,6 +213,7 @@ class _$StockItemImpl implements _StockItem {
       @JsonKey(name: 'product_id') required this.productId,
       this.product,
       required this.quantity,
+      @JsonKey(name: 'min_quantity') this.minQuantity = 0.0,
       @JsonKey(name: 'updated_at') required this.updatedAt});
 
   factory _$StockItemImpl.fromJson(Map<String, dynamic> json) =>
@@ -217,12 +232,15 @@ class _$StockItemImpl implements _StockItem {
   @override
   final double quantity;
   @override
+  @JsonKey(name: 'min_quantity')
+  final double minQuantity;
+  @override
   @JsonKey(name: 'updated_at')
   final DateTime updatedAt;
 
   @override
   String toString() {
-    return 'StockItem(id: $id, storeId: $storeId, productId: $productId, product: $product, quantity: $quantity, updatedAt: $updatedAt)';
+    return 'StockItem(id: $id, storeId: $storeId, productId: $productId, product: $product, quantity: $quantity, minQuantity: $minQuantity, updatedAt: $updatedAt)';
   }
 
   @override
@@ -237,6 +255,8 @@ class _$StockItemImpl implements _StockItem {
             (identical(other.product, product) || other.product == product) &&
             (identical(other.quantity, quantity) ||
                 other.quantity == quantity) &&
+            (identical(other.minQuantity, minQuantity) ||
+                other.minQuantity == minQuantity) &&
             (identical(other.updatedAt, updatedAt) ||
                 other.updatedAt == updatedAt));
   }
@@ -244,7 +264,7 @@ class _$StockItemImpl implements _StockItem {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
-      runtimeType, id, storeId, productId, product, quantity, updatedAt);
+      runtimeType, id, storeId, productId, product, quantity, minQuantity, updatedAt);
 
   /// Create a copy of StockItem
   /// with the given fields replaced by the non-null parameter values.
@@ -269,6 +289,7 @@ abstract class _StockItem implements StockItem {
           @JsonKey(name: 'product_id') required final String productId,
           final Product? product,
           required final double quantity,
+          @JsonKey(name: 'min_quantity') final double minQuantity,
           @JsonKey(name: 'updated_at') required final DateTime updatedAt}) =
       _$StockItemImpl;
 
@@ -287,6 +308,9 @@ abstract class _StockItem implements StockItem {
   Product? get product;
   @override
   double get quantity;
+  @override
+  @JsonKey(name: 'min_quantity')
+  double get minQuantity;
   @override
   @JsonKey(name: 'updated_at')
   DateTime get updatedAt;

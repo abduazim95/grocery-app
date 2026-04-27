@@ -16,6 +16,7 @@ abstract class AppRoutes {
   static const debtDetail = '/debts/:id';
   static const stores = '/stores';
   static const createStore = '/stores/new';
+  static const storeDetail = '/stores/:id';
   static const storeStock = '/stores/:id/stock';
   static const stockTransfer = '/stock/transfer';
   static const newManager = '/admin/managers/new';

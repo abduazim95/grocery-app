@@ -15,6 +15,7 @@ _$StockItemImpl _$$StockItemImplFromJson(Map<String, dynamic> json) =>
           ? null
           : Product.fromJson(json['product'] as Map<String, dynamic>),
       quantity: (json['quantity'] as num).toDouble(),
+      minQuantity: (json['min_quantity'] as num?)?.toDouble() ?? 0.0,
       updatedAt: DateTime.parse(json['updated_at'] as String),
     );
 
@@ -25,5 +26,6 @@ Map<String, dynamic> _$$StockItemImplToJson(_$StockItemImpl instance) =>
       'product_id': instance.productId,
       'product': instance.product,
       'quantity': instance.quantity,
+      'min_quantity': instance.minQuantity,
       'updated_at': instance.updatedAt.toIso8601String(),
     };
