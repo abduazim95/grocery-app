@@ -19,8 +19,17 @@ class _SaleRepositoryImpl implements SaleRepository {
   _SaleRepositoryImpl(this._ds);
 
   @override
-  Future<List<Sale>> listSales({required String storeId}) =>
-      _ds.listSales(storeId: storeId);
+  Future<List<Sale>> listSales({
+    required String storeId,
+    int page = 1,
+    int limit = 30,
+    DateTime? from,
+    DateTime? to,
+  }) =>
+      _ds.listSales(storeId: storeId, page: page, limit: limit, from: from, to: to);
+
+  @override
+  Future<Sale> getSaleById(String id) => _ds.getSaleById(id);
 
   @override
   Future<Sale> createSale({

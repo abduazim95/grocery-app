@@ -12,6 +12,18 @@ class StockRemoteDs {
     return unwrapList(response, (d) => StockItem.fromJson(d as Map<String, dynamic>));
   }
 
+  Future<StockItem> addStock({
+    required String storeId,
+    required String productId,
+    required double quantity,
+  }) async {
+    final response = await _client.post(
+      Endpoints.storeStock(storeId),
+      data: {'product_id': productId, 'quantity': quantity},
+    );
+    return unwrapData(response, (d) => StockItem.fromJson(d as Map<String, dynamic>));
+  }
+
   Future<StockItem> updateStock({
     required String storeId,
     required String productId,

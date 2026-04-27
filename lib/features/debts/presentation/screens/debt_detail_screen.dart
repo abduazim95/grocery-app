@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:grocery/core/providers/core_providers.dart';
 import 'package:grocery/features/debts/presentation/providers/debts_provider.dart';
 import 'package:grocery/shared/models/debt.dart';
 import 'package:grocery/shared/utils/error_messages.dart';
@@ -83,6 +84,8 @@ class _DebtBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isManager = ref.watch(authStateProvider).valueOrNull?.isManager ?? false;
+
     return Column(
       children: [
         ListTile(
@@ -134,7 +137,26 @@ class _DebtBody extends ConsumerWidget {
                   ),
                 ),
                 subtitle: p.note.isNotEmpty ? Text(p.note) : null,
-                trailing: Text(formatDate(p.createdAt)),
+                trailing: isManager
+                    ? Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(formatDate(p.createdAt),
+                              style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                          IconButton(
+                            icon: const Icon(Icons.edit_outlined, size: 18),
+                            onPressed: () =>
+                                _showEditPaymentSheet(context, ref, p),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete_outline,
+                                size: 18, color: Colors.red),
+                            onPressed: () =>
+                                _confirmDeletePayment(context, ref, p),
+                          ),
+                        ],
+                      )
+                    : Text(formatDate(p.createdAt)),
               );
             },
           ),
@@ -163,13 +185,42 @@ class _DebtBody extends ConsumerWidget {
     );
   }
 
-  void _showPaymentSheet(BuildContext context, WidgetRef ref,
-      {required bool isAdd}) {
+  void _showPaymentSheet(BuildContext context, WidgetRef ref, {required bool isAdd}) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       builder: (_) => _PaymentSheet(id: id, isAdd: isAdd),
     );
+  }
+
+  void _showEditPaymentSheet(BuildContext context, WidgetRef ref, DebtPayment payment) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => _EditPaymentSheet(debtId: id, payment: payment),
+    );
+  }
+
+  Future<void> _confirmDeletePayment(
+      BuildContext context, WidgetRef ref, DebtPayment payment) async {
+    final confirmed = await showConfirmDialog(
+      context,
+      title: 'Удалить операцию?',
+      content:
+          'Операция "${formatSum(payment.amount.abs())}" будет удалена. Баланс долга пересчитается автоматически.',
+    );
+    if (!confirmed) return;
+    try {
+      await ref
+          .read(debtDetailNotifierProvider(id).notifier)
+          .deletePayment(payment.id);
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(mapException(e)), backgroundColor: Colors.red),
+        );
+      }
+    }
   }
 }
 
@@ -255,6 +306,98 @@ class _PaymentSheetState extends ConsumerState<_PaymentSheet> {
                     width: 20,
                     child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                 : Text(widget.isAdd ? 'Добавить долг' : 'Записать оплату'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EditPaymentSheet extends ConsumerStatefulWidget {
+  final String debtId;
+  final DebtPayment payment;
+
+  const _EditPaymentSheet({required this.debtId, required this.payment});
+
+  @override
+  ConsumerState<_EditPaymentSheet> createState() => _EditPaymentSheetState();
+}
+
+class _EditPaymentSheetState extends ConsumerState<_EditPaymentSheet> {
+  late final TextEditingController _amountCtrl;
+  late final TextEditingController _noteCtrl;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _amountCtrl =
+        TextEditingController(text: widget.payment.amount.abs().toStringAsFixed(0));
+    _noteCtrl = TextEditingController(text: widget.payment.note);
+  }
+
+  @override
+  void dispose() {
+    _amountCtrl.dispose();
+    _noteCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    final abs = double.tryParse(_amountCtrl.text.trim());
+    if (abs == null || abs <= 0) return;
+    final signed = widget.payment.amount < 0 ? -abs : abs;
+
+    setState(() => _isLoading = true);
+    try {
+      await ref
+          .read(debtDetailNotifierProvider(widget.debtId).notifier)
+          .updatePayment(widget.payment.id, signed, note: _noteCtrl.text.trim());
+      if (mounted) Navigator.pop(context);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(mapException(e)), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding:
+          EdgeInsets.fromLTRB(16, 16, 16, MediaQuery.of(context).viewInsets.bottom + 16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text('Редактировать операцию',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _amountCtrl,
+            autofocus: true,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
+            decoration: const InputDecoration(labelText: 'Сумма *', suffixText: 'тг'),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _noteCtrl,
+            decoration: const InputDecoration(labelText: 'Комментарий'),
+          ),
+          const SizedBox(height: 16),
+          FilledButton(
+            onPressed: _isLoading ? null : _save,
+            child: _isLoading
+                ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                : const Text('Сохранить'),
           ),
         ],
       ),

@@ -289,6 +289,15 @@ class _CreateSaleScreenState extends ConsumerState<CreateSaleScreen> {
   }
 }
 
+// Units that support fractional quantities.
+bool _isDecimalUnit(String unit) => unit == 'кг' || unit == 'л';
+
+String _formatQty(double q, String unit) {
+  if (!_isDecimalUnit(unit)) return q.toStringAsFixed(0);
+  // Show up to 3 decimal places, strip trailing zeros.
+  return q.toStringAsFixed(3).replaceAll(RegExp(r'0+$'), '').replaceAll(RegExp(r'\.$'), '');
+}
+
 class _SaleItemTile extends StatefulWidget {
   final SaleItemDraft item;
   final void Function(double) onQtyChanged;
@@ -306,18 +315,25 @@ class _SaleItemTile extends StatefulWidget {
 
 class _SaleItemTileState extends State<_SaleItemTile> {
   late final TextEditingController _ctrl;
+  bool _hasFocus = false;
+
+  String get _unit => widget.item.product.unit;
+  bool get _decimal => _isDecimalUnit(_unit);
+  // Step: 0.5 for weight/volume, 1 for countable units.
+  double get _step => _decimal ? 0.5 : 1;
 
   @override
   void initState() {
     super.initState();
-    _ctrl = TextEditingController(text: widget.item.quantity.toStringAsFixed(0));
+    _ctrl = TextEditingController(text: _formatQty(widget.item.quantity, _unit));
   }
 
   @override
   void didUpdateWidget(_SaleItemTile old) {
     super.didUpdateWidget(old);
-    if (old.item.quantity != widget.item.quantity) {
-      _ctrl.text = widget.item.quantity.toStringAsFixed(0);
+    // Only update text when not focused to avoid cursor jump while typing.
+    if (!_hasFocus && old.item.quantity != widget.item.quantity) {
+      _ctrl.text = _formatQty(widget.item.quantity, _unit);
     }
   }
 
@@ -327,45 +343,65 @@ class _SaleItemTileState extends State<_SaleItemTile> {
     super.dispose();
   }
 
+  void _decrement() {
+    final q = double.parse(
+      (widget.item.quantity - _step).toStringAsFixed(3),
+    );
+    if (q <= 0) {
+      widget.onRemove();
+    } else {
+      widget.onQtyChanged(q);
+    }
+  }
+
+  void _increment() {
+    final q = double.parse(
+      (widget.item.quantity + _step).toStringAsFixed(3),
+    );
+    widget.onQtyChanged(q);
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListTile(
       title: Text(widget.item.product.name),
-      subtitle: Text(formatSum(widget.item.product.price)),
+      subtitle: Text('${formatSum(widget.item.product.price)} / $_unit'),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           IconButton(
             icon: const Icon(Icons.remove),
-            onPressed: () {
-              final q = widget.item.quantity - 1;
-              if (q <= 0) {
-                widget.onRemove();
-              } else {
-                widget.onQtyChanged(q);
-              }
-            },
+            onPressed: _decrement,
           ),
-          SizedBox(
-            width: 48,
-            child: TextField(
-              controller: _ctrl,
-              textAlign: TextAlign.center,
-              keyboardType: TextInputType.number,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              decoration: const InputDecoration(
-                isDense: true,
-                contentPadding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+          Focus(
+            onFocusChange: (focused) => setState(() => _hasFocus = focused),
+            child: SizedBox(
+              width: _decimal ? 64 : 48,
+              child: TextField(
+                controller: _ctrl,
+                textAlign: TextAlign.center,
+                keyboardType: _decimal
+                    ? const TextInputType.numberWithOptions(decimal: true)
+                    : TextInputType.number,
+                inputFormatters: [
+                  _decimal
+                      ? FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))
+                      : FilteringTextInputFormatter.digitsOnly,
+                ],
+                decoration: const InputDecoration(
+                  isDense: true,
+                  contentPadding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                ),
+                onChanged: (v) {
+                  final q = double.tryParse(v);
+                  if (q != null && q > 0) widget.onQtyChanged(q);
+                },
               ),
-              onChanged: (v) {
-                final q = double.tryParse(v);
-                if (q != null && q > 0) widget.onQtyChanged(q);
-              },
             ),
           ),
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: () => widget.onQtyChanged(widget.item.quantity + 1),
+            onPressed: _increment,
           ),
           Text(
             formatSum(widget.item.subtotal),

@@ -19,15 +19,19 @@ class _PurchaseRepositoryImpl implements PurchaseRepository {
   _PurchaseRepositoryImpl(this._ds);
 
   @override
-  Future<List<PurchaseOrder>> listPurchases({String? storeId}) =>
-      _ds.listPurchases(storeId: storeId);
+  Future<List<PurchaseOrder>> listPurchases({
+    String? storeId,
+    int page = 1,
+    int limit = 30,
+    String? status,
+  }) =>
+      _ds.listPurchases(storeId: storeId, page: page, limit: limit, status: status);
 
   @override
   Future<PurchaseOrder> getById(String id) => _ds.getById(id);
 
   @override
-  Future<PurchaseOrder> create({required String storeId}) =>
-      _ds.create(storeId: storeId);
+  Future<PurchaseOrder> create({required String storeId}) => _ds.create(storeId: storeId);
 
   @override
   Future<PurchaseOrderItem> addItem({
@@ -51,6 +55,13 @@ class _PurchaseRepositoryImpl implements PurchaseRepository {
   }) =>
       _ds.updateItem(
           purchaseId: purchaseId, itemId: itemId, quantity: quantity, price: price);
+
+  @override
+  Future<void> deleteItem({
+    required String purchaseId,
+    required String itemId,
+  }) =>
+      _ds.deleteItem(purchaseId: purchaseId, itemId: itemId);
 
   @override
   Future<PurchaseOrder> markBought({

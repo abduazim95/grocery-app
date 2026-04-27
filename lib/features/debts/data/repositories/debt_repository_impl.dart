@@ -65,5 +65,21 @@ class _DebtRepositoryImpl implements DebtRepository {
       _ds.addPayment(id: id, amount: amount, note: note);
 
   @override
+  Future<DebtRecord> updatePayment({
+    required String id,
+    required String paymentId,
+    required double amount,
+    String? note,
+  }) =>
+      _ds.updatePayment(id: id, paymentId: paymentId, amount: amount, note: note);
+
+  @override
+  Future<DebtRecord> deletePayment({
+    required String id,
+    required String paymentId,
+  }) =>
+      _ds.deletePayment(id: id, paymentId: paymentId);
+
+  @override
   Future<void> delete(String id) => _ds.delete(id);
 }

@@ -7,12 +7,29 @@ class SaleRemoteDs {
 
   SaleRemoteDs(this._client);
 
-  Future<List<Sale>> listSales({required String storeId}) async {
+  Future<List<Sale>> listSales({
+    required String storeId,
+    int page = 1,
+    int limit = 30,
+    DateTime? from,
+    DateTime? to,
+  }) async {
     final response = await _client.get(
       Endpoints.sales,
-      queryParameters: {'store_id': storeId},
+      queryParameters: {
+        'store_id': storeId,
+        'page': page,
+        'limit': limit,
+        if (from != null) 'from': from.toIso8601String().substring(0, 10),
+        if (to != null) 'to': to.toIso8601String().substring(0, 10),
+      },
     );
-    return unwrapList(response, (d) => Sale.fromJson(d as Map<String, dynamic>));
+    return unwrapPagedList(response, (d) => Sale.fromJson(d as Map<String, dynamic>));
+  }
+
+  Future<Sale> getSaleById(String id) async {
+    final response = await _client.get(Endpoints.saleById(id));
+    return unwrapData(response, (d) => Sale.fromJson(d as Map<String, dynamic>));
   }
 
   Future<Sale> createSale({

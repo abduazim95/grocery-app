@@ -7,12 +7,22 @@ class PurchaseRemoteDs {
 
   PurchaseRemoteDs(this._client);
 
-  Future<List<PurchaseOrder>> listPurchases({String? storeId}) async {
+  Future<List<PurchaseOrder>> listPurchases({
+    String? storeId,
+    int page = 1,
+    int limit = 30,
+    String? status,
+  }) async {
     final response = await _client.get(
       Endpoints.purchases,
-      queryParameters: storeId != null ? {'store_id': storeId} : {},
+      queryParameters: {
+        if (storeId != null) 'store_id': storeId,
+        'page': page,
+        'limit': limit,
+        if (status != null) 'status': status,
+      },
     );
-    return unwrapList(response, (d) => PurchaseOrder.fromJson(d as Map<String, dynamic>));
+    return unwrapPagedList(response, (d) => PurchaseOrder.fromJson(d as Map<String, dynamic>));
   }
 
   Future<PurchaseOrder> getById(String id) async {
@@ -66,6 +76,13 @@ class PurchaseRemoteDs {
       data: {'is_bought': isBought},
     );
     return unwrapData(response, (d) => PurchaseOrder.fromJson(d as Map<String, dynamic>));
+  }
+
+  Future<void> deleteItem({
+    required String purchaseId,
+    required String itemId,
+  }) async {
+    await _client.delete(Endpoints.purchaseItem(purchaseId, itemId));
   }
 
   Future<PurchaseOrder> close(String id) async {

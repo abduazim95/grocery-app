@@ -6,7 +6,7 @@ part of 'sales_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$salesListHash() => r'f6f3a38e257a14c22d9da0e8dea90d8345060bba';
+String _$saleDetailHash() => r'0e3c60bc63c68185dbb1aa362d1dae4e0e723a75';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -29,16 +29,155 @@ class _SystemHash {
   }
 }
 
-/// See also [salesList].
-@ProviderFor(salesList)
+/// See also [saleDetail].
+@ProviderFor(saleDetail)
+const saleDetailProvider = SaleDetailFamily();
+
+/// See also [saleDetail].
+class SaleDetailFamily extends Family<AsyncValue<Sale>> {
+  /// See also [saleDetail].
+  const SaleDetailFamily();
+
+  /// See also [saleDetail].
+  SaleDetailProvider call(
+    String id,
+  ) {
+    return SaleDetailProvider(
+      id,
+    );
+  }
+
+  @override
+  SaleDetailProvider getProviderOverride(
+    covariant SaleDetailProvider provider,
+  ) {
+    return call(
+      provider.id,
+    );
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'saleDetailProvider';
+}
+
+/// See also [saleDetail].
+class SaleDetailProvider extends AutoDisposeFutureProvider<Sale> {
+  /// See also [saleDetail].
+  SaleDetailProvider(
+    String id,
+  ) : this._internal(
+          (ref) => saleDetail(
+            ref as SaleDetailRef,
+            id,
+          ),
+          from: saleDetailProvider,
+          name: r'saleDetailProvider',
+          debugGetCreateSourceHash:
+              const bool.fromEnvironment('dart.vm.product')
+                  ? null
+                  : _$saleDetailHash,
+          dependencies: SaleDetailFamily._dependencies,
+          allTransitiveDependencies:
+              SaleDetailFamily._allTransitiveDependencies,
+          id: id,
+        );
+
+  SaleDetailProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.id,
+  }) : super.internal();
+
+  final String id;
+
+  @override
+  Override overrideWith(
+    FutureOr<Sale> Function(SaleDetailRef provider) create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: SaleDetailProvider._internal(
+        (ref) => create(ref as SaleDetailRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        id: id,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeFutureProviderElement<Sale> createElement() {
+    return _SaleDetailProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is SaleDetailProvider && other.id == id;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, id.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+mixin SaleDetailRef on AutoDisposeFutureProviderRef<Sale> {
+  /// The parameter `id` of this provider.
+  String get id;
+}
+
+class _SaleDetailProviderElement extends AutoDisposeFutureProviderElement<Sale>
+    with SaleDetailRef {
+  _SaleDetailProviderElement(super.provider);
+
+  @override
+  String get id => (origin as SaleDetailProvider).id;
+}
+
+String _$salesListHash() => r'dc5c78df5824a40722ac638f86236845ad601672';
+
+abstract class _$SalesList
+    extends BuildlessAutoDisposeAsyncNotifier<SalesPageData> {
+  late final String storeId;
+
+  FutureOr<SalesPageData> build(
+    String storeId,
+  );
+}
+
+/// See also [SalesList].
+@ProviderFor(SalesList)
 const salesListProvider = SalesListFamily();
 
-/// See also [salesList].
-class SalesListFamily extends Family<AsyncValue<List<Sale>>> {
-  /// See also [salesList].
+/// See also [SalesList].
+class SalesListFamily extends Family<AsyncValue<SalesPageData>> {
+  /// See also [SalesList].
   const SalesListFamily();
 
-  /// See also [salesList].
+  /// See also [SalesList].
   SalesListProvider call(
     String storeId,
   ) {
@@ -71,16 +210,14 @@ class SalesListFamily extends Family<AsyncValue<List<Sale>>> {
   String? get name => r'salesListProvider';
 }
 
-/// See also [salesList].
-class SalesListProvider extends AutoDisposeFutureProvider<List<Sale>> {
-  /// See also [salesList].
+/// See also [SalesList].
+class SalesListProvider
+    extends AutoDisposeAsyncNotifierProviderImpl<SalesList, SalesPageData> {
+  /// See also [SalesList].
   SalesListProvider(
     String storeId,
   ) : this._internal(
-          (ref) => salesList(
-            ref as SalesListRef,
-            storeId,
-          ),
+          () => SalesList()..storeId = storeId,
           from: salesListProvider,
           name: r'salesListProvider',
           debugGetCreateSourceHash:
@@ -105,13 +242,20 @@ class SalesListProvider extends AutoDisposeFutureProvider<List<Sale>> {
   final String storeId;
 
   @override
-  Override overrideWith(
-    FutureOr<List<Sale>> Function(SalesListRef provider) create,
+  FutureOr<SalesPageData> runNotifierBuild(
+    covariant SalesList notifier,
   ) {
+    return notifier.build(
+      storeId,
+    );
+  }
+
+  @override
+  Override overrideWith(SalesList Function() create) {
     return ProviderOverride(
       origin: this,
       override: SalesListProvider._internal(
-        (ref) => create(ref as SalesListRef),
+        () => create()..storeId = storeId,
         from: from,
         name: null,
         dependencies: null,
@@ -123,7 +267,8 @@ class SalesListProvider extends AutoDisposeFutureProvider<List<Sale>> {
   }
 
   @override
-  AutoDisposeFutureProviderElement<List<Sale>> createElement() {
+  AutoDisposeAsyncNotifierProviderElement<SalesList, SalesPageData>
+      createElement() {
     return _SalesListProviderElement(this);
   }
 
@@ -143,13 +288,14 @@ class SalesListProvider extends AutoDisposeFutureProvider<List<Sale>> {
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-mixin SalesListRef on AutoDisposeFutureProviderRef<List<Sale>> {
+mixin SalesListRef on AutoDisposeAsyncNotifierProviderRef<SalesPageData> {
   /// The parameter `storeId` of this provider.
   String get storeId;
 }
 
 class _SalesListProviderElement
-    extends AutoDisposeFutureProviderElement<List<Sale>> with SalesListRef {
+    extends AutoDisposeAsyncNotifierProviderElement<SalesList, SalesPageData>
+    with SalesListRef {
   _SalesListProviderElement(super.provider);
 
   @override

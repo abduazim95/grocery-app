@@ -22,5 +22,15 @@ abstract interface class DebtRepository {
     required double amount,
     String? note,
   });
+  Future<DebtRecord> updatePayment({
+    required String id,
+    required String paymentId,
+    required double amount,
+    String? note,
+  });
+  Future<DebtRecord> deletePayment({
+    required String id,
+    required String paymentId,
+  });
   Future<void> delete(String id);
 }

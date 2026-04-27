@@ -6,7 +6,7 @@ part of 'purchases_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$purchasesListHash() => r'01f3722e6d1c73f475cccf6fb9150d487ccca545';
+String _$purchasesListHash() => r'44240cd64419ff9bac8e48ef209e7c951d37ba18';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -29,21 +29,34 @@ class _SystemHash {
   }
 }
 
-/// See also [purchasesList].
-@ProviderFor(purchasesList)
+abstract class _$PurchasesList
+    extends BuildlessAutoDisposeAsyncNotifier<PurchasesPageData> {
+  late final String? storeId;
+  late final String? status;
+
+  FutureOr<PurchasesPageData> build({
+    String? storeId,
+    String? status,
+  });
+}
+
+/// See also [PurchasesList].
+@ProviderFor(PurchasesList)
 const purchasesListProvider = PurchasesListFamily();
 
-/// See also [purchasesList].
-class PurchasesListFamily extends Family<AsyncValue<List<PurchaseOrder>>> {
-  /// See also [purchasesList].
+/// See also [PurchasesList].
+class PurchasesListFamily extends Family<AsyncValue<PurchasesPageData>> {
+  /// See also [PurchasesList].
   const PurchasesListFamily();
 
-  /// See also [purchasesList].
+  /// See also [PurchasesList].
   PurchasesListProvider call({
     String? storeId,
+    String? status,
   }) {
     return PurchasesListProvider(
       storeId: storeId,
+      status: status,
     );
   }
 
@@ -53,6 +66,7 @@ class PurchasesListFamily extends Family<AsyncValue<List<PurchaseOrder>>> {
   ) {
     return call(
       storeId: provider.storeId,
+      status: provider.status,
     );
   }
 
@@ -71,17 +85,17 @@ class PurchasesListFamily extends Family<AsyncValue<List<PurchaseOrder>>> {
   String? get name => r'purchasesListProvider';
 }
 
-/// See also [purchasesList].
-class PurchasesListProvider
-    extends AutoDisposeFutureProvider<List<PurchaseOrder>> {
-  /// See also [purchasesList].
+/// See also [PurchasesList].
+class PurchasesListProvider extends AutoDisposeAsyncNotifierProviderImpl<
+    PurchasesList, PurchasesPageData> {
+  /// See also [PurchasesList].
   PurchasesListProvider({
     String? storeId,
+    String? status,
   }) : this._internal(
-          (ref) => purchasesList(
-            ref as PurchasesListRef,
-            storeId: storeId,
-          ),
+          () => PurchasesList()
+            ..storeId = storeId
+            ..status = status,
           from: purchasesListProvider,
           name: r'purchasesListProvider',
           debugGetCreateSourceHash:
@@ -92,6 +106,7 @@ class PurchasesListProvider
           allTransitiveDependencies:
               PurchasesListFamily._allTransitiveDependencies,
           storeId: storeId,
+          status: status,
         );
 
   PurchasesListProvider._internal(
@@ -102,42 +117,59 @@ class PurchasesListProvider
     required super.debugGetCreateSourceHash,
     required super.from,
     required this.storeId,
+    required this.status,
   }) : super.internal();
 
   final String? storeId;
+  final String? status;
 
   @override
-  Override overrideWith(
-    FutureOr<List<PurchaseOrder>> Function(PurchasesListRef provider) create,
+  FutureOr<PurchasesPageData> runNotifierBuild(
+    covariant PurchasesList notifier,
   ) {
+    return notifier.build(
+      storeId: storeId,
+      status: status,
+    );
+  }
+
+  @override
+  Override overrideWith(PurchasesList Function() create) {
     return ProviderOverride(
       origin: this,
       override: PurchasesListProvider._internal(
-        (ref) => create(ref as PurchasesListRef),
+        () => create()
+          ..storeId = storeId
+          ..status = status,
         from: from,
         name: null,
         dependencies: null,
         allTransitiveDependencies: null,
         debugGetCreateSourceHash: null,
         storeId: storeId,
+        status: status,
       ),
     );
   }
 
   @override
-  AutoDisposeFutureProviderElement<List<PurchaseOrder>> createElement() {
+  AutoDisposeAsyncNotifierProviderElement<PurchasesList, PurchasesPageData>
+      createElement() {
     return _PurchasesListProviderElement(this);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is PurchasesListProvider && other.storeId == storeId;
+    return other is PurchasesListProvider &&
+        other.storeId == storeId &&
+        other.status == status;
   }
 
   @override
   int get hashCode {
     var hash = _SystemHash.combine(0, runtimeType.hashCode);
     hash = _SystemHash.combine(hash, storeId.hashCode);
+    hash = _SystemHash.combine(hash, status.hashCode);
 
     return _SystemHash.finish(hash);
   }
@@ -145,21 +177,27 @@ class PurchasesListProvider
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-mixin PurchasesListRef on AutoDisposeFutureProviderRef<List<PurchaseOrder>> {
+mixin PurchasesListRef
+    on AutoDisposeAsyncNotifierProviderRef<PurchasesPageData> {
   /// The parameter `storeId` of this provider.
   String? get storeId;
+
+  /// The parameter `status` of this provider.
+  String? get status;
 }
 
 class _PurchasesListProviderElement
-    extends AutoDisposeFutureProviderElement<List<PurchaseOrder>>
-    with PurchasesListRef {
+    extends AutoDisposeAsyncNotifierProviderElement<PurchasesList,
+        PurchasesPageData> with PurchasesListRef {
   _PurchasesListProviderElement(super.provider);
 
   @override
   String? get storeId => (origin as PurchasesListProvider).storeId;
+  @override
+  String? get status => (origin as PurchasesListProvider).status;
 }
 
-String _$purchaseDetailHash() => r'2ac89d9f87aad5490b2fdeba64d77f8fe25e6165';
+String _$purchaseDetailHash() => r'a27ebd595ebc06a248f3e1a10a912172d8eea108';
 
 abstract class _$PurchaseDetail
     extends BuildlessAutoDisposeAsyncNotifier<PurchaseOrder> {

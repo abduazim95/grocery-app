@@ -43,6 +43,25 @@ class DebtDetailNotifier extends _$DebtDetailNotifier {
     ref.invalidate(debtsListProvider());
   }
 
+  Future<void> updatePayment(String paymentId, double amount, {String? note}) async {
+    final record = await ref.read(debtRepositoryProvider).updatePayment(
+          id: id,
+          paymentId: paymentId,
+          amount: amount,
+          note: note,
+        );
+    state = AsyncData(record);
+    ref.invalidate(debtsListProvider());
+  }
+
+  Future<void> deletePayment(String paymentId) async {
+    final record = await ref
+        .read(debtRepositoryProvider)
+        .deletePayment(id: id, paymentId: paymentId);
+    state = AsyncData(record);
+    ref.invalidate(debtsListProvider());
+  }
+
   Future<void> editDebt({
     required String debtorName,
     String? debtorPhone,

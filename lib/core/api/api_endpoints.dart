@@ -10,6 +10,7 @@ abstract class Endpoints {
   static String productBarcode(String b) => '/v1/products/barcode/$b';
   // Sales
   static const sales = '/v1/sales';
+  static String saleById(String id) => '/v1/sales/$id';
   // Purchases
   static const purchases = '/v1/purchases';
   static String purchaseById(String id) => '/v1/purchases/$id';
@@ -22,6 +23,7 @@ abstract class Endpoints {
   static const debts = '/v1/debts';
   static String debtById(String id) => '/v1/debts/$id';
   static String debtPayments(String id) => '/v1/debts/$id/payments';
+  static String debtPayment(String id, String paymentId) => '/v1/debts/$id/payments/$paymentId';
   // Stores
   static const stores = '/v1/stores';
   static String storeById(String id) => '/v1/stores/$id';

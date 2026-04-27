@@ -19,6 +19,7 @@ import 'package:grocery/features/profile/presentation/screens/profile_screen.dar
 import 'package:grocery/features/purchases/presentation/screens/purchase_detail_screen.dart';
 import 'package:grocery/features/purchases/presentation/screens/purchases_screen.dart';
 import 'package:grocery/features/sales/presentation/screens/create_sale_screen.dart';
+import 'package:grocery/features/sales/presentation/screens/sale_detail_screen.dart';
 import 'package:grocery/features/sales/presentation/screens/sales_screen.dart';
 import 'package:grocery/features/server_setup/presentation/screens/server_setup_screen.dart';
 import 'package:grocery/features/settings/presentation/screens/settings_screen.dart';
@@ -115,6 +116,10 @@ GoRouter appRouter(Ref ref) {
         builder: (_, s) => EditProductScreen(id: s.pathParameters['id']!),
       ),
       GoRoute(path: AppRoutes.newSale, builder: (_, __) => const CreateSaleScreen()),
+      GoRoute(
+        path: AppRoutes.saleDetail,
+        builder: (_, s) => SaleDetailScreen(id: s.pathParameters['id']!),
+      ),
       GoRoute(
         path: AppRoutes.purchaseDetail,
         builder: (_, s) => PurchaseDetailScreen(id: s.pathParameters['id']!),

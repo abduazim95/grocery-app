@@ -5,7 +5,9 @@ import 'package:grocery/core/providers/core_providers.dart';
 import 'package:grocery/core/router/app_routes.dart';
 import 'package:grocery/features/purchases/data/repositories/purchase_repository_impl.dart';
 import 'package:grocery/features/purchases/presentation/providers/purchases_provider.dart';
+import 'package:grocery/features/stores/data/repositories/store_repository_impl.dart';
 import 'package:grocery/shared/models/purchase.dart';
+import 'package:grocery/shared/models/store.dart';
 import 'package:grocery/shared/utils/error_messages.dart';
 import 'package:grocery/shared/utils/formatters.dart';
 import 'package:grocery/shared/widgets/error_view.dart';
@@ -33,14 +35,31 @@ class _PurchasesScreenState extends ConsumerState<PurchasesScreen>
     super.dispose();
   }
 
-  String get _storeId => ref.read(authStateProvider).valueOrNull?.storeId ?? '';
+  String? get _storeId => ref.read(authStateProvider).valueOrNull?.storeId;
+
+  bool get _isManager =>
+      ref.read(authStateProvider).valueOrNull?.isManager ?? false;
 
   Future<void> _createPurchase() async {
+    if (_isManager) {
+      await _createPurchaseAsManager();
+    } else {
+      await _createPurchaseAsSeller();
+    }
+  }
+
+  Future<void> _createPurchaseAsSeller() async {
+    final storeId = _storeId ?? '';
+    if (storeId.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Магазин не определён'), backgroundColor: Colors.red),
+      );
+      return;
+    }
     try {
-      final order =
-          await ref.read(purchaseRepositoryProvider).create(storeId: _storeId);
+      final order = await ref.read(purchaseRepositoryProvider).create(storeId: storeId);
       if (mounted) {
-        ref.invalidate(purchasesListProvider());
+        _invalidateAllLists();
         context.push('/purchases/${order.id}');
       }
     } catch (e) {
@@ -52,10 +71,58 @@ class _PurchasesScreenState extends ConsumerState<PurchasesScreen>
     }
   }
 
+  Future<void> _createPurchaseAsManager() async {
+    List<Store> stores;
+    try {
+      stores = await ref.read(storesListProvider.future);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(mapException(e)), backgroundColor: Colors.red),
+        );
+      }
+      return;
+    }
+    if (stores.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Нет доступных магазинов'), backgroundColor: Colors.red),
+        );
+      }
+      return;
+    }
+    if (!mounted) return;
+
+    final selectedStoreId = await showModalBottomSheet<String>(
+      context: context,
+      builder: (_) => _StorePickerSheet(stores: stores),
+    );
+    if (selectedStoreId == null || !mounted) return;
+
+    try {
+      final order =
+          await ref.read(purchaseRepositoryProvider).create(storeId: selectedStoreId);
+      if (mounted) {
+        _invalidateAllLists();
+        context.push('/purchases/${order.id}');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(mapException(e)), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  void _invalidateAllLists() {
+    ref.invalidate(purchasesListProvider(storeId: _storeId, status: 'open'));
+    ref.invalidate(purchasesListProvider(storeId: _storeId, status: 'closed'));
+  }
+
   @override
   Widget build(BuildContext context) {
-    final purchasesAsync = ref.watch(purchasesListProvider(storeId: _storeId));
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Закуп'),
@@ -74,85 +141,151 @@ class _PurchasesScreenState extends ConsumerState<PurchasesScreen>
         onPressed: _createPurchase,
         child: const Icon(Icons.add),
       ),
-      body: purchasesAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => ErrorView(
-          error: e,
-          onRetry: () =>
-              ref.invalidate(purchasesListProvider(storeId: _storeId)),
-        ),
-        data: (purchases) => TabBarView(
-          controller: _tabCtrl,
-          children: [
-            _PurchaseList(
-              purchases: purchases
-                  .where((p) => p.status == PurchaseStatus.open)
-                  .toList(),
-              // Передаем коллбэк для обновления
-              onRefresh: () async =>
-                  ref.invalidate(purchasesListProvider(storeId: _storeId)),
-            ),
-            _PurchaseList(
-              purchases: purchases
-                  .where((p) => p.status == PurchaseStatus.closed)
-                  .toList(),
-              onRefresh: () async =>
-                  ref.invalidate(purchasesListProvider(storeId: _storeId)),
-            ),
-          ],
-        ),
+      body: TabBarView(
+        controller: _tabCtrl,
+        children: [
+          _PaginatedPurchaseList(storeId: _storeId, status: 'open'),
+          _PaginatedPurchaseList(storeId: _storeId, status: 'closed'),
+        ],
       ),
     );
   }
 }
 
-class _PurchaseList extends StatelessWidget {
-  final List<PurchaseOrder> purchases;
-  final Future<void> Function() onRefresh; // Добавили коллбэк
+class _PaginatedPurchaseList extends ConsumerStatefulWidget {
+  final String? storeId;
+  final String? status;
 
-  const _PurchaseList({
-    required this.purchases,
-    required this.onRefresh,
-  });
+  const _PaginatedPurchaseList({this.storeId, this.status});
+
+  @override
+  ConsumerState<_PaginatedPurchaseList> createState() => _PaginatedPurchaseListState();
+}
+
+class _PaginatedPurchaseListState extends ConsumerState<_PaginatedPurchaseList> {
+  final _scrollCtrl = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollCtrl.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollCtrl.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollCtrl.position.pixels >= _scrollCtrl.position.maxScrollExtent - 200) {
+      ref
+          .read(purchasesListProvider(storeId: widget.storeId, status: widget.status).notifier)
+          .loadMore();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    if (purchases.isEmpty) {
-      return RefreshIndicator(
-        onRefresh: onRefresh,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: SizedBox(
-            height: MediaQuery.of(context).size.height * 0.7,
-            child: const Center(child: Text('Нет заявок')),
+    final async = ref.watch(
+        purchasesListProvider(storeId: widget.storeId, status: widget.status));
+
+    return async.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => ErrorView(
+        error: e,
+        onRetry: () => ref
+            .read(purchasesListProvider(storeId: widget.storeId, status: widget.status)
+                .notifier)
+            .refresh(),
+      ),
+      data: (data) {
+        if (data.purchases.isEmpty) {
+          return RefreshIndicator(
+            onRefresh: () => ref
+                .read(purchasesListProvider(
+                        storeId: widget.storeId, status: widget.status)
+                    .notifier)
+                .refresh(),
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: SizedBox(
+                height: 300,
+                child: Center(
+                  child: Text(widget.status == 'open' ? 'Нет открытых заявок' : 'Нет закрытых заявок'),
+                ),
+              ),
+            ),
+          );
+        }
+
+        return RefreshIndicator(
+          onRefresh: () => ref
+              .read(purchasesListProvider(storeId: widget.storeId, status: widget.status)
+                  .notifier)
+              .refresh(),
+          child: ListView.builder(
+            controller: _scrollCtrl,
+            physics: const AlwaysScrollableScrollPhysics(),
+            itemCount: data.purchases.length + (data.isLoadingMore ? 1 : 0),
+            itemBuilder: (_, i) {
+              if (i == data.purchases.length) {
+                return const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+              final p = data.purchases[i];
+              return ListTile(
+                title: Text('Заявка от ${formatDate(p.createdAt)}'),
+                subtitle: Text('${p.items.length} позиций'),
+                trailing: Chip(
+                  label: Text(
+                    p.status == PurchaseStatus.open ? 'открыта' : 'закрыта',
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                  backgroundColor: p.status == PurchaseStatus.open
+                      ? Colors.green[100]
+                      : Colors.grey[200],
+                ),
+                onTap: () => context.push('/purchases/${p.id}'),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _StorePickerSheet extends StatelessWidget {
+  final List<Store> stores;
+
+  const _StorePickerSheet({required this.stores});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: Text(
+            'Выберите магазин',
+            style: Theme.of(context).textTheme.titleLarge,
           ),
         ),
-      );
-    }
-
-    return RefreshIndicator(
-      onRefresh: onRefresh,
-      child: ListView.builder(
-        physics: const AlwaysScrollableScrollPhysics(),
-        itemCount: purchases.length,
-        itemBuilder: (_, i) {
-          final p = purchases[i];
-          return ListTile(
-            title: Text('Заявка от ${formatDate(p.createdAt)}'),
-            subtitle: Text('${p.items.length} позиций'),
-            trailing: Chip(
-              label: Text(
-                p.status == PurchaseStatus.open ? 'открыта' : 'закрыта',
-                style: const TextStyle(fontSize: 12),
-              ),
-              backgroundColor: p.status == PurchaseStatus.open
-                  ? Colors.green[100]
-                  : Colors.grey[200],
-            ),
-            onTap: () => context.push('/purchases/${p.id}'),
-          );
-        },
-      ),
+        const Divider(height: 0),
+        ...stores.map(
+          (s) => ListTile(
+            title: Text(s.name),
+            subtitle: (s.address != null && s.address!.isNotEmpty) ? Text(s.address!) : null,
+            onTap: () => Navigator.pop(context, s.id),
+          ),
+        ),
+        const SizedBox(height: 16),
+      ],
     );
   }
 }

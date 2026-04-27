@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:grocery/features/purchases/data/repositories/purchase_repository_impl.dart';
 import 'package:grocery/features/purchases/presentation/providers/purchases_provider.dart';
 import 'package:grocery/features/products/data/repositories/product_repository_impl.dart';
 import 'package:grocery/core/providers/core_providers.dart';
@@ -167,8 +168,159 @@ class _ItemTile extends ConsumerWidget {
           decoration: item.isBought ? TextDecoration.lineThrough : null,
         ),
       ),
-      subtitle: Text(
-        '${item.quantity} × ${formatSum(item.price)}',
+      subtitle: Text('${item.quantity} × ${formatSum(item.price)}'),
+      trailing: isOpen
+          ? Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.edit_outlined, size: 20),
+                  tooltip: 'Редактировать',
+                  onPressed: () => _showEditSheet(context, ref),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete_outline, size: 20, color: Colors.red),
+                  tooltip: 'Удалить',
+                  onPressed: () => _confirmDelete(context, ref),
+                ),
+              ],
+            )
+          : null,
+    );
+  }
+
+  void _showEditSheet(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => _EditItemSheet(item: item, purchaseId: purchaseId),
+    );
+  }
+
+  Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showConfirmDialog(
+      context,
+      title: 'Удалить позицию?',
+      content: 'Позиция "${item.product?.name ?? item.productId}" будет удалена из заявки.',
+    );
+    if (!confirmed) return;
+    try {
+      await ref
+          .read(purchaseDetailProvider(purchaseId).notifier)
+          .deleteItem(item.id);
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(mapException(e)), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+}
+
+class _EditItemSheet extends ConsumerStatefulWidget {
+  final PurchaseOrderItem item;
+  final String purchaseId;
+
+  const _EditItemSheet({required this.item, required this.purchaseId});
+
+  @override
+  ConsumerState<_EditItemSheet> createState() => _EditItemSheetState();
+}
+
+class _EditItemSheetState extends ConsumerState<_EditItemSheet> {
+  late final TextEditingController _qtyCtrl;
+  late final TextEditingController _priceCtrl;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _qtyCtrl = TextEditingController(text: widget.item.quantity.toStringAsFixed(0));
+    _priceCtrl = TextEditingController(text: widget.item.price.toStringAsFixed(0));
+  }
+
+  @override
+  void dispose() {
+    _qtyCtrl.dispose();
+    _priceCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    final qty = double.tryParse(_qtyCtrl.text);
+    final price = double.tryParse(_priceCtrl.text);
+    if (qty == null || price == null || qty <= 0 || price <= 0) return;
+
+    setState(() => _isLoading = true);
+    try {
+      await ref.read(purchaseRepositoryProvider).updateItem(
+            purchaseId: widget.purchaseId,
+            itemId: widget.item.id,
+            quantity: qty,
+            price: price,
+          );
+      ref.invalidate(purchaseDetailProvider(widget.purchaseId));
+      if (mounted) Navigator.pop(context);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(mapException(e)), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding:
+          EdgeInsets.fromLTRB(16, 16, 16, MediaQuery.of(context).viewInsets.bottom + 16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'Редактировать позицию',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _qtyCtrl,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  decoration: const InputDecoration(labelText: 'Количество'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: TextField(
+                  controller: _priceCtrl,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))
+                  ],
+                  decoration: const InputDecoration(labelText: 'Цена', suffixText: 'тг'),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          FilledButton(
+            onPressed: _isLoading ? null : _save,
+            child: _isLoading
+                ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                : const Text('Сохранить'),
+          ),
+        ],
       ),
     );
   }

@@ -77,6 +77,30 @@ class DebtRemoteDs {
     return unwrapData(response, (d) => DebtRecord.fromJson(d as Map<String, dynamic>));
   }
 
+  Future<DebtRecord> updatePayment({
+    required String id,
+    required String paymentId,
+    required double amount,
+    String? note,
+  }) async {
+    final response = await _client.put(
+      Endpoints.debtPayment(id, paymentId),
+      data: {
+        'amount': amount,
+        if (note != null && note.isNotEmpty) 'note': note,
+      },
+    );
+    return unwrapData(response, (d) => DebtRecord.fromJson(d as Map<String, dynamic>));
+  }
+
+  Future<DebtRecord> deletePayment({
+    required String id,
+    required String paymentId,
+  }) async {
+    final response = await _client.delete(Endpoints.debtPayment(id, paymentId));
+    return unwrapData(response, (d) => DebtRecord.fromJson(d as Map<String, dynamic>));
+  }
+
   Future<void> delete(String id) async {
     await _client.delete(Endpoints.debtById(id));
   }

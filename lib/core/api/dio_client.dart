@@ -154,3 +154,9 @@ List<T> unwrapList<T>(Response response, T Function(dynamic) fromJson) {
   final data = (response.data as Map<String, dynamic>)['data'];
   return (data as List).map((e) => fromJson(e)).toList();
 }
+
+List<T> unwrapPagedList<T>(Response response, T Function(dynamic) fromJson) {
+  final data = (response.data as Map<String, dynamic>)['data']['items'];
+  return (data as List).map((e) => fromJson(e)).toList();
+}
+

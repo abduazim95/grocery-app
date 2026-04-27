@@ -173,7 +173,7 @@ class _DebtsListProviderElement
 }
 
 String _$debtDetailNotifierHash() =>
-    r'871f8974dd7821826d6bf258923d0722047c1936';
+    r'2b0e38143d26b8bdc578dc8edbbd686ddb28c61b';
 
 abstract class _$DebtDetailNotifier
     extends BuildlessAutoDisposeAsyncNotifier<DebtRecord> {
