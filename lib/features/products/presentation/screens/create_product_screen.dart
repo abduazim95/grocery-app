@@ -23,6 +23,7 @@ class _CreateProductScreenState extends ConsumerState<CreateProductScreen> {
   final _priceCtrl = TextEditingController();
   final _barcodeCtrl = TextEditingController();
   String _unit = 'шт';
+  bool _isPerishable = false;
   bool _isLoading = false;
 
   @override
@@ -68,6 +69,7 @@ class _CreateProductScreenState extends ConsumerState<CreateProductScreen> {
             price: price,
             unit: _unit,
             barcode: _barcodeCtrl.text.trim().isEmpty ? null : _barcodeCtrl.text.trim(),
+            isPerishable: _isPerishable,
           );
       if (mounted) context.pop();
     } catch (e) {
@@ -115,7 +117,15 @@ class _CreateProductScreenState extends ConsumerState<CreateProductScreen> {
               controller: _barcodeCtrl,
               onScanned: (_) {},
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 8),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Скоропортящийся товар'),
+              subtitle: const Text('Учёт ведётся по партиям с датой просрочки'),
+              value: _isPerishable,
+              onChanged: (v) => setState(() => _isPerishable = v),
+            ),
+            const SizedBox(height: 16),
             FilledButton(
               onPressed: _isLoading ? null : _save,
               child: _isLoading

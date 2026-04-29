@@ -32,6 +32,9 @@ abstract class Endpoints {
   static String storeSeller(String id, String sid) => '/v1/stores/$id/sellers/$sid';
   static String storeSellerAssign(String id) => '/v1/stores/$id/sellers/assign';
   static String storeStock(String id) => '/v1/stores/$id/stock';
+  static String storeBatches(String id) => '/v1/stores/$id/stock/batches';
+  static String storeBatch(String id, String bid) => '/v1/stores/$id/stock/batches/$bid';
+  static String storeBatchWriteOff(String id, String bid) => '/v1/stores/$id/stock/batches/$bid/write-off';
   // Stock
   static const stockTransfer = '/v1/stock/transfer';
   // Profile

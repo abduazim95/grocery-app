@@ -43,10 +43,16 @@ class PurchaseRemoteDs {
     required String productId,
     required double quantity,
     required double price,
+    DateTime? expiresAt,
   }) async {
     final response = await _client.post(
       Endpoints.purchaseItems(purchaseId),
-      data: {'product_id': productId, 'quantity': quantity, 'price': price},
+      data: {
+        'product_id': productId,
+        'quantity': quantity,
+        'price': price,
+        if (expiresAt != null) 'expires_at': expiresAt.toIso8601String(),
+      },
     );
     return unwrapData(
         response, (d) => PurchaseOrderItem.fromJson(d as Map<String, dynamic>));
@@ -57,10 +63,15 @@ class PurchaseRemoteDs {
     required String itemId,
     required double quantity,
     required double price,
+    DateTime? expiresAt,
   }) async {
     final response = await _client.put(
       Endpoints.purchaseItem(purchaseId, itemId),
-      data: {'quantity': quantity, 'price': price},
+      data: {
+        'quantity': quantity,
+        'price': price,
+        if (expiresAt != null) 'expires_at': expiresAt.toIso8601String(),
+      },
     );
     return unwrapData(
         response, (d) => PurchaseOrderItem.fromJson(d as Map<String, dynamic>));

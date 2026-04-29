@@ -39,12 +39,15 @@ class _PurchaseRepositoryImpl implements PurchaseRepository {
     required String productId,
     required double quantity,
     required double price,
+    DateTime? expiresAt,
   }) =>
       _ds.addItem(
-          purchaseId: purchaseId,
-          productId: productId,
-          quantity: quantity,
-          price: price);
+        purchaseId: purchaseId,
+        productId: productId,
+        quantity: quantity,
+        price: price,
+        expiresAt: expiresAt,
+      );
 
   @override
   Future<PurchaseOrderItem> updateItem({
@@ -52,9 +55,15 @@ class _PurchaseRepositoryImpl implements PurchaseRepository {
     required String itemId,
     required double quantity,
     required double price,
+    DateTime? expiresAt,
   }) =>
       _ds.updateItem(
-          purchaseId: purchaseId, itemId: itemId, quantity: quantity, price: price);
+        purchaseId: purchaseId,
+        itemId: itemId,
+        quantity: quantity,
+        price: price,
+        expiresAt: expiresAt,
+      );
 
   @override
   Future<void> deleteItem({

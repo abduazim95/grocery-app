@@ -14,12 +14,14 @@ abstract interface class PurchaseRepository {
     required String productId,
     required double quantity,
     required double price,
+    DateTime? expiresAt,
   });
   Future<PurchaseOrderItem> updateItem({
     required String purchaseId,
     required String itemId,
     required double quantity,
     required double price,
+    DateTime? expiresAt,
   });
   Future<void> deleteItem({
     required String purchaseId,

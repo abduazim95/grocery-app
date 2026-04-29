@@ -1,5 +1,6 @@
 import 'package:grocery/core/api/api_endpoints.dart';
 import 'package:grocery/core/api/dio_client.dart';
+import 'package:grocery/shared/models/stock_batch.dart';
 import 'package:grocery/shared/models/stock_item.dart';
 
 class StockListResult {
@@ -91,6 +92,54 @@ class StockRemoteDs {
         'product_id': productId,
         'quantity': quantity,
       },
+    );
+  }
+
+  Future<List<StockBatch>> getBatches(String storeId, String productId) async {
+    final response = await _client.get(
+      Endpoints.storeBatches(storeId),
+      queryParameters: {'product_id': productId},
+    );
+    return unwrapList(response, (d) => StockBatch.fromJson(d as Map<String, dynamic>));
+  }
+
+  Future<StockBatch> addBatch({
+    required String storeId,
+    required String productId,
+    required double quantity,
+    required DateTime expiresAt,
+  }) async {
+    final response = await _client.post(
+      Endpoints.storeBatches(storeId),
+      data: {
+        'product_id': productId,
+        'quantity': quantity,
+        'expires_at': expiresAt.toIso8601String(),
+      },
+    );
+    return unwrapData(response, (d) => StockBatch.fromJson(d as Map<String, dynamic>));
+  }
+
+  Future<StockBatch> updateBatch({
+    required String storeId,
+    required String batchId,
+    required double quantity,
+  }) async {
+    final response = await _client.patch(
+      Endpoints.storeBatch(storeId, batchId),
+      data: {'quantity': quantity},
+    );
+    return unwrapData(response, (d) => StockBatch.fromJson(d as Map<String, dynamic>));
+  }
+
+  Future<void> writeOffBatch({
+    required String storeId,
+    required String batchId,
+    required double quantity,
+  }) async {
+    await _client.post(
+      Endpoints.storeBatchWriteOff(storeId, batchId),
+      data: {'quantity': quantity},
     );
   }
 }

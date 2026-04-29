@@ -330,6 +330,8 @@ mixin _$PurchaseOrderItem {
   double get price => throw _privateConstructorUsedError;
   @JsonKey(name: 'is_bought', defaultValue: false)
   bool get isBought => throw _privateConstructorUsedError;
+  @JsonKey(name: 'expires_at')
+  DateTime? get expiresAt => throw _privateConstructorUsedError;
 
   /// Serializes this PurchaseOrderItem to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -354,7 +356,8 @@ abstract class $PurchaseOrderItemCopyWith<$Res> {
       Product? product,
       double quantity,
       double price,
-      @JsonKey(name: 'is_bought', defaultValue: false) bool isBought});
+      @JsonKey(name: 'is_bought', defaultValue: false) bool isBought,
+      @JsonKey(name: 'expires_at') DateTime? expiresAt});
 
   $ProductCopyWith<$Res>? get product;
 }
@@ -381,6 +384,7 @@ class _$PurchaseOrderItemCopyWithImpl<$Res, $Val extends PurchaseOrderItem>
     Object? quantity = null,
     Object? price = null,
     Object? isBought = null,
+    Object? expiresAt = freezed,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -411,6 +415,10 @@ class _$PurchaseOrderItemCopyWithImpl<$Res, $Val extends PurchaseOrderItem>
           ? _value.isBought
           : isBought // ignore: cast_nullable_to_non_nullable
               as bool,
+      expiresAt: freezed == expiresAt
+          ? _value.expiresAt
+          : expiresAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
     ) as $Val);
   }
 
@@ -444,7 +452,8 @@ abstract class _$$PurchaseOrderItemImplCopyWith<$Res>
       Product? product,
       double quantity,
       double price,
-      @JsonKey(name: 'is_bought', defaultValue: false) bool isBought});
+      @JsonKey(name: 'is_bought', defaultValue: false) bool isBought,
+      @JsonKey(name: 'expires_at') DateTime? expiresAt});
 
   @override
   $ProductCopyWith<$Res>? get product;
@@ -470,6 +479,7 @@ class __$$PurchaseOrderItemImplCopyWithImpl<$Res>
     Object? quantity = null,
     Object? price = null,
     Object? isBought = null,
+    Object? expiresAt = freezed,
   }) {
     return _then(_$PurchaseOrderItemImpl(
       id: null == id
@@ -500,6 +510,10 @@ class __$$PurchaseOrderItemImplCopyWithImpl<$Res>
           ? _value.isBought
           : isBought // ignore: cast_nullable_to_non_nullable
               as bool,
+      expiresAt: freezed == expiresAt
+          ? _value.expiresAt
+          : expiresAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
     ));
   }
 }
@@ -514,7 +528,8 @@ class _$PurchaseOrderItemImpl implements _PurchaseOrderItem {
       this.product,
       required this.quantity,
       required this.price,
-      @JsonKey(name: 'is_bought', defaultValue: false) required this.isBought});
+      @JsonKey(name: 'is_bought', defaultValue: false) required this.isBought,
+      @JsonKey(name: 'expires_at') this.expiresAt});
 
   factory _$PurchaseOrderItemImpl.fromJson(Map<String, dynamic> json) =>
       _$$PurchaseOrderItemImplFromJson(json);
@@ -536,10 +551,13 @@ class _$PurchaseOrderItemImpl implements _PurchaseOrderItem {
   @override
   @JsonKey(name: 'is_bought', defaultValue: false)
   final bool isBought;
+  @override
+  @JsonKey(name: 'expires_at')
+  final DateTime? expiresAt;
 
   @override
   String toString() {
-    return 'PurchaseOrderItem(id: $id, purchaseOrderId: $purchaseOrderId, productId: $productId, product: $product, quantity: $quantity, price: $price, isBought: $isBought)';
+    return 'PurchaseOrderItem(id: $id, purchaseOrderId: $purchaseOrderId, productId: $productId, product: $product, quantity: $quantity, price: $price, isBought: $isBought, expiresAt: $expiresAt)';
   }
 
   @override
@@ -557,13 +575,15 @@ class _$PurchaseOrderItemImpl implements _PurchaseOrderItem {
                 other.quantity == quantity) &&
             (identical(other.price, price) || other.price == price) &&
             (identical(other.isBought, isBought) ||
-                other.isBought == isBought));
+                other.isBought == isBought) &&
+            (identical(other.expiresAt, expiresAt) ||
+                other.expiresAt == expiresAt));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(runtimeType, id, purchaseOrderId, productId,
-      product, quantity, price, isBought);
+      product, quantity, price, isBought, expiresAt);
 
   /// Create a copy of PurchaseOrderItem
   /// with the given fields replaced by the non-null parameter values.
@@ -591,7 +611,9 @@ abstract class _PurchaseOrderItem implements PurchaseOrderItem {
       required final double quantity,
       required final double price,
       @JsonKey(name: 'is_bought', defaultValue: false)
-      required final bool isBought}) = _$PurchaseOrderItemImpl;
+      required final bool isBought,
+      @JsonKey(name: 'expires_at')
+      final DateTime? expiresAt}) = _$PurchaseOrderItemImpl;
 
   factory _PurchaseOrderItem.fromJson(Map<String, dynamic> json) =
       _$PurchaseOrderItemImpl.fromJson;
@@ -613,6 +635,9 @@ abstract class _PurchaseOrderItem implements PurchaseOrderItem {
   @override
   @JsonKey(name: 'is_bought', defaultValue: false)
   bool get isBought;
+  @override
+  @JsonKey(name: 'expires_at')
+  DateTime? get expiresAt;
 
   /// Create a copy of PurchaseOrderItem
   /// with the given fields replaced by the non-null parameter values.

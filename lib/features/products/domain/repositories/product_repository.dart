@@ -15,6 +15,7 @@ abstract interface class ProductRepository {
     required double price,
     required String unit,
     String? barcode,
+    bool isPerishable,
   });
   Future<Product> update({
     required String id,
@@ -22,6 +23,7 @@ abstract interface class ProductRepository {
     required double price,
     required String unit,
     String? barcode,
+    bool isPerishable,
   });
   Future<int> batchUpdatePrice(List<String> ids, double price);
 }

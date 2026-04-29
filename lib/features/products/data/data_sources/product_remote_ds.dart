@@ -46,6 +46,7 @@ class ProductRemoteDs {
     required double price,
     required String unit,
     String? barcode,
+    bool isPerishable = false,
   }) async {
     final response = await _client.post(
       Endpoints.products,
@@ -55,6 +56,7 @@ class ProductRemoteDs {
         'price': price,
         'unit': unit,
         if (barcode != null && barcode.isNotEmpty) 'barcode': barcode,
+        'is_perishable': isPerishable,
       },
     );
     return unwrapData(response, (d) => Product.fromJson(d as Map<String, dynamic>));
@@ -77,6 +79,7 @@ class ProductRemoteDs {
     required double price,
     required String unit,
     String? barcode,
+    bool isPerishable = false,
   }) async {
     final response = await _client.put(
       Endpoints.productById(id),
@@ -85,6 +88,7 @@ class ProductRemoteDs {
         'price': price,
         'unit': unit,
         if (barcode != null && barcode.isNotEmpty) 'barcode': barcode,
+        'is_perishable': isPerishable,
       },
     );
     return unwrapData(response, (d) => Product.fromJson(d as Map<String, dynamic>));

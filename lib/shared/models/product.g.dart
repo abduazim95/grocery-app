@@ -14,6 +14,7 @@ _$ProductImpl _$$ProductImplFromJson(Map<String, dynamic> json) =>
       barcode: json['barcode'] as String?,
       price: (json['price'] as num).toDouble(),
       unit: json['unit'] as String,
+      isPerishable: json['is_perishable'] as bool? ?? false,
       updatedAt: DateTime.parse(json['updated_at'] as String),
     );
 
@@ -25,5 +26,6 @@ Map<String, dynamic> _$$ProductImplToJson(_$ProductImpl instance) =>
       'barcode': instance.barcode,
       'price': instance.price,
       'unit': instance.unit,
+      'is_perishable': instance.isPerishable,
       'updated_at': instance.updatedAt.toIso8601String(),
     };

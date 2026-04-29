@@ -41,6 +41,16 @@ class $ProductsTableTable extends ProductsTable
   late final GeneratedColumn<String> unit = GeneratedColumn<String>(
       'unit', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _isPerishableMeta =
+      const VerificationMeta('isPerishable');
+  @override
+  late final GeneratedColumn<bool> isPerishable = GeneratedColumn<bool>(
+      'is_perishable', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("is_perishable" IN (0, 1))'),
+      defaultValue: const Constant(false));
   static const VerificationMeta _cachedAtMeta =
       const VerificationMeta('cachedAt');
   @override
@@ -49,7 +59,7 @@ class $ProductsTableTable extends ProductsTable
       type: DriftSqlType.dateTime, requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns =>
-      [id, businessId, name, barcode, price, unit, cachedAt];
+      [id, businessId, name, barcode, price, unit, isPerishable, cachedAt];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -95,6 +105,12 @@ class $ProductsTableTable extends ProductsTable
     } else if (isInserting) {
       context.missing(_unitMeta);
     }
+    if (data.containsKey('is_perishable')) {
+      context.handle(
+          _isPerishableMeta,
+          isPerishable.isAcceptableOrUnknown(
+              data['is_perishable']!, _isPerishableMeta));
+    }
     if (data.containsKey('cached_at')) {
       context.handle(_cachedAtMeta,
           cachedAt.isAcceptableOrUnknown(data['cached_at']!, _cachedAtMeta));
@@ -122,6 +138,8 @@ class $ProductsTableTable extends ProductsTable
           .read(DriftSqlType.double, data['${effectivePrefix}price'])!,
       unit: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}unit'])!,
+      isPerishable: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_perishable'])!,
       cachedAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}cached_at'])!,
     );
@@ -141,6 +159,7 @@ class ProductsTableData extends DataClass
   final String? barcode;
   final double price;
   final String unit;
+  final bool isPerishable;
   final DateTime cachedAt;
   const ProductsTableData(
       {required this.id,
@@ -149,6 +168,7 @@ class ProductsTableData extends DataClass
       this.barcode,
       required this.price,
       required this.unit,
+      required this.isPerishable,
       required this.cachedAt});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -161,6 +181,7 @@ class ProductsTableData extends DataClass
     }
     map['price'] = Variable<double>(price);
     map['unit'] = Variable<String>(unit);
+    map['is_perishable'] = Variable<bool>(isPerishable);
     map['cached_at'] = Variable<DateTime>(cachedAt);
     return map;
   }
@@ -175,6 +196,7 @@ class ProductsTableData extends DataClass
           : Value(barcode),
       price: Value(price),
       unit: Value(unit),
+      isPerishable: Value(isPerishable),
       cachedAt: Value(cachedAt),
     );
   }
@@ -189,6 +211,7 @@ class ProductsTableData extends DataClass
       barcode: serializer.fromJson<String?>(json['barcode']),
       price: serializer.fromJson<double>(json['price']),
       unit: serializer.fromJson<String>(json['unit']),
+      isPerishable: serializer.fromJson<bool>(json['isPerishable']),
       cachedAt: serializer.fromJson<DateTime>(json['cachedAt']),
     );
   }
@@ -202,6 +225,7 @@ class ProductsTableData extends DataClass
       'barcode': serializer.toJson<String?>(barcode),
       'price': serializer.toJson<double>(price),
       'unit': serializer.toJson<String>(unit),
+      'isPerishable': serializer.toJson<bool>(isPerishable),
       'cachedAt': serializer.toJson<DateTime>(cachedAt),
     };
   }
@@ -213,6 +237,7 @@ class ProductsTableData extends DataClass
           Value<String?> barcode = const Value.absent(),
           double? price,
           String? unit,
+          bool? isPerishable,
           DateTime? cachedAt}) =>
       ProductsTableData(
         id: id ?? this.id,
@@ -221,6 +246,7 @@ class ProductsTableData extends DataClass
         barcode: barcode.present ? barcode.value : this.barcode,
         price: price ?? this.price,
         unit: unit ?? this.unit,
+        isPerishable: isPerishable ?? this.isPerishable,
         cachedAt: cachedAt ?? this.cachedAt,
       );
   ProductsTableData copyWithCompanion(ProductsTableCompanion data) {
@@ -232,6 +258,9 @@ class ProductsTableData extends DataClass
       barcode: data.barcode.present ? data.barcode.value : this.barcode,
       price: data.price.present ? data.price.value : this.price,
       unit: data.unit.present ? data.unit.value : this.unit,
+      isPerishable: data.isPerishable.present
+          ? data.isPerishable.value
+          : this.isPerishable,
       cachedAt: data.cachedAt.present ? data.cachedAt.value : this.cachedAt,
     );
   }
@@ -245,14 +274,15 @@ class ProductsTableData extends DataClass
           ..write('barcode: $barcode, ')
           ..write('price: $price, ')
           ..write('unit: $unit, ')
+          ..write('isPerishable: $isPerishable, ')
           ..write('cachedAt: $cachedAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, businessId, name, barcode, price, unit, cachedAt);
+  int get hashCode => Object.hash(
+      id, businessId, name, barcode, price, unit, isPerishable, cachedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -263,6 +293,7 @@ class ProductsTableData extends DataClass
           other.barcode == this.barcode &&
           other.price == this.price &&
           other.unit == this.unit &&
+          other.isPerishable == this.isPerishable &&
           other.cachedAt == this.cachedAt);
 }
 
@@ -273,6 +304,7 @@ class ProductsTableCompanion extends UpdateCompanion<ProductsTableData> {
   final Value<String?> barcode;
   final Value<double> price;
   final Value<String> unit;
+  final Value<bool> isPerishable;
   final Value<DateTime> cachedAt;
   final Value<int> rowid;
   const ProductsTableCompanion({
@@ -282,6 +314,7 @@ class ProductsTableCompanion extends UpdateCompanion<ProductsTableData> {
     this.barcode = const Value.absent(),
     this.price = const Value.absent(),
     this.unit = const Value.absent(),
+    this.isPerishable = const Value.absent(),
     this.cachedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -292,6 +325,7 @@ class ProductsTableCompanion extends UpdateCompanion<ProductsTableData> {
     this.barcode = const Value.absent(),
     required double price,
     required String unit,
+    this.isPerishable = const Value.absent(),
     required DateTime cachedAt,
     this.rowid = const Value.absent(),
   })  : id = Value(id),
@@ -307,6 +341,7 @@ class ProductsTableCompanion extends UpdateCompanion<ProductsTableData> {
     Expression<String>? barcode,
     Expression<double>? price,
     Expression<String>? unit,
+    Expression<bool>? isPerishable,
     Expression<DateTime>? cachedAt,
     Expression<int>? rowid,
   }) {
@@ -317,6 +352,7 @@ class ProductsTableCompanion extends UpdateCompanion<ProductsTableData> {
       if (barcode != null) 'barcode': barcode,
       if (price != null) 'price': price,
       if (unit != null) 'unit': unit,
+      if (isPerishable != null) 'is_perishable': isPerishable,
       if (cachedAt != null) 'cached_at': cachedAt,
       if (rowid != null) 'rowid': rowid,
     });
@@ -329,6 +365,7 @@ class ProductsTableCompanion extends UpdateCompanion<ProductsTableData> {
       Value<String?>? barcode,
       Value<double>? price,
       Value<String>? unit,
+      Value<bool>? isPerishable,
       Value<DateTime>? cachedAt,
       Value<int>? rowid}) {
     return ProductsTableCompanion(
@@ -338,6 +375,7 @@ class ProductsTableCompanion extends UpdateCompanion<ProductsTableData> {
       barcode: barcode ?? this.barcode,
       price: price ?? this.price,
       unit: unit ?? this.unit,
+      isPerishable: isPerishable ?? this.isPerishable,
       cachedAt: cachedAt ?? this.cachedAt,
       rowid: rowid ?? this.rowid,
     );
@@ -364,6 +402,9 @@ class ProductsTableCompanion extends UpdateCompanion<ProductsTableData> {
     if (unit.present) {
       map['unit'] = Variable<String>(unit.value);
     }
+    if (isPerishable.present) {
+      map['is_perishable'] = Variable<bool>(isPerishable.value);
+    }
     if (cachedAt.present) {
       map['cached_at'] = Variable<DateTime>(cachedAt.value);
     }
@@ -382,6 +423,7 @@ class ProductsTableCompanion extends UpdateCompanion<ProductsTableData> {
           ..write('barcode: $barcode, ')
           ..write('price: $price, ')
           ..write('unit: $unit, ')
+          ..write('isPerishable: $isPerishable, ')
           ..write('cachedAt: $cachedAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -408,6 +450,7 @@ typedef $$ProductsTableTableCreateCompanionBuilder = ProductsTableCompanion
   Value<String?> barcode,
   required double price,
   required String unit,
+  Value<bool> isPerishable,
   required DateTime cachedAt,
   Value<int> rowid,
 });
@@ -419,6 +462,7 @@ typedef $$ProductsTableTableUpdateCompanionBuilder = ProductsTableCompanion
   Value<String?> barcode,
   Value<double> price,
   Value<String> unit,
+  Value<bool> isPerishable,
   Value<DateTime> cachedAt,
   Value<int> rowid,
 });
@@ -449,6 +493,9 @@ class $$ProductsTableTableFilterComposer
 
   ColumnFilters<String> get unit => $composableBuilder(
       column: $table.unit, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isPerishable => $composableBuilder(
+      column: $table.isPerishable, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<DateTime> get cachedAt => $composableBuilder(
       column: $table.cachedAt, builder: (column) => ColumnFilters(column));
@@ -481,6 +528,10 @@ class $$ProductsTableTableOrderingComposer
   ColumnOrderings<String> get unit => $composableBuilder(
       column: $table.unit, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<bool> get isPerishable => $composableBuilder(
+      column: $table.isPerishable,
+      builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<DateTime> get cachedAt => $composableBuilder(
       column: $table.cachedAt, builder: (column) => ColumnOrderings(column));
 }
@@ -511,6 +562,9 @@ class $$ProductsTableTableAnnotationComposer
 
   GeneratedColumn<String> get unit =>
       $composableBuilder(column: $table.unit, builder: (column) => column);
+
+  GeneratedColumn<bool> get isPerishable => $composableBuilder(
+      column: $table.isPerishable, builder: (column) => column);
 
   GeneratedColumn<DateTime> get cachedAt =>
       $composableBuilder(column: $table.cachedAt, builder: (column) => column);
@@ -548,6 +602,7 @@ class $$ProductsTableTableTableManager extends RootTableManager<
             Value<String?> barcode = const Value.absent(),
             Value<double> price = const Value.absent(),
             Value<String> unit = const Value.absent(),
+            Value<bool> isPerishable = const Value.absent(),
             Value<DateTime> cachedAt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
@@ -558,6 +613,7 @@ class $$ProductsTableTableTableManager extends RootTableManager<
             barcode: barcode,
             price: price,
             unit: unit,
+            isPerishable: isPerishable,
             cachedAt: cachedAt,
             rowid: rowid,
           ),
@@ -568,6 +624,7 @@ class $$ProductsTableTableTableManager extends RootTableManager<
             Value<String?> barcode = const Value.absent(),
             required double price,
             required String unit,
+            Value<bool> isPerishable = const Value.absent(),
             required DateTime cachedAt,
             Value<int> rowid = const Value.absent(),
           }) =>
@@ -578,6 +635,7 @@ class $$ProductsTableTableTableManager extends RootTableManager<
             barcode: barcode,
             price: price,
             unit: unit,
+            isPerishable: isPerishable,
             cachedAt: cachedAt,
             rowid: rowid,
           ),

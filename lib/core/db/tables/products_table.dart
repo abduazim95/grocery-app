@@ -7,6 +7,8 @@ class ProductsTable extends Table {
   TextColumn get barcode => text().nullable()();
   RealColumn get price => real()();
   TextColumn get unit => text()();
+  BoolColumn get isPerishable =>
+      boolean().withDefault(const Constant(false))();
   DateTimeColumn get cachedAt => dateTime()();
 
   @override

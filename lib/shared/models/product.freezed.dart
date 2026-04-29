@@ -27,6 +27,8 @@ mixin _$Product {
   String? get barcode => throw _privateConstructorUsedError;
   double get price => throw _privateConstructorUsedError;
   String get unit => throw _privateConstructorUsedError;
+  @JsonKey(name: 'is_perishable')
+  bool get isPerishable => throw _privateConstructorUsedError;
   @JsonKey(name: 'updated_at')
   DateTime get updatedAt => throw _privateConstructorUsedError;
 
@@ -51,6 +53,7 @@ abstract class $ProductCopyWith<$Res> {
       String? barcode,
       double price,
       String unit,
+      @JsonKey(name: 'is_perishable') bool isPerishable,
       @JsonKey(name: 'updated_at') DateTime updatedAt});
 }
 
@@ -75,6 +78,7 @@ class _$ProductCopyWithImpl<$Res, $Val extends Product>
     Object? barcode = freezed,
     Object? price = null,
     Object? unit = null,
+    Object? isPerishable = null,
     Object? updatedAt = null,
   }) {
     return _then(_value.copyWith(
@@ -102,6 +106,10 @@ class _$ProductCopyWithImpl<$Res, $Val extends Product>
           ? _value.unit
           : unit // ignore: cast_nullable_to_non_nullable
               as String,
+      isPerishable: null == isPerishable
+          ? _value.isPerishable
+          : isPerishable // ignore: cast_nullable_to_non_nullable
+              as bool,
       updatedAt: null == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
@@ -124,6 +132,7 @@ abstract class _$$ProductImplCopyWith<$Res> implements $ProductCopyWith<$Res> {
       String? barcode,
       double price,
       String unit,
+      @JsonKey(name: 'is_perishable') bool isPerishable,
       @JsonKey(name: 'updated_at') DateTime updatedAt});
 }
 
@@ -146,6 +155,7 @@ class __$$ProductImplCopyWithImpl<$Res>
     Object? barcode = freezed,
     Object? price = null,
     Object? unit = null,
+    Object? isPerishable = null,
     Object? updatedAt = null,
   }) {
     return _then(_$ProductImpl(
@@ -173,6 +183,10 @@ class __$$ProductImplCopyWithImpl<$Res>
           ? _value.unit
           : unit // ignore: cast_nullable_to_non_nullable
               as String,
+      isPerishable: null == isPerishable
+          ? _value.isPerishable
+          : isPerishable // ignore: cast_nullable_to_non_nullable
+              as bool,
       updatedAt: null == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
@@ -191,6 +205,7 @@ class _$ProductImpl implements _Product {
       this.barcode,
       required this.price,
       required this.unit,
+      @JsonKey(name: 'is_perishable') this.isPerishable = false,
       @JsonKey(name: 'updated_at') required this.updatedAt});
 
   factory _$ProductImpl.fromJson(Map<String, dynamic> json) =>
@@ -210,12 +225,15 @@ class _$ProductImpl implements _Product {
   @override
   final String unit;
   @override
+  @JsonKey(name: 'is_perishable')
+  final bool isPerishable;
+  @override
   @JsonKey(name: 'updated_at')
   final DateTime updatedAt;
 
   @override
   String toString() {
-    return 'Product(id: $id, businessId: $businessId, name: $name, barcode: $barcode, price: $price, unit: $unit, updatedAt: $updatedAt)';
+    return 'Product(id: $id, businessId: $businessId, name: $name, barcode: $barcode, price: $price, unit: $unit, isPerishable: $isPerishable, updatedAt: $updatedAt)';
   }
 
   @override
@@ -230,14 +248,16 @@ class _$ProductImpl implements _Product {
             (identical(other.barcode, barcode) || other.barcode == barcode) &&
             (identical(other.price, price) || other.price == price) &&
             (identical(other.unit, unit) || other.unit == unit) &&
+            (identical(other.isPerishable, isPerishable) ||
+                other.isPerishable == isPerishable) &&
             (identical(other.updatedAt, updatedAt) ||
                 other.updatedAt == updatedAt));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, id, businessId, name, barcode, price, unit, updatedAt);
+  int get hashCode => Object.hash(runtimeType, id, businessId, name, barcode,
+      price, unit, isPerishable, updatedAt);
 
   /// Create a copy of Product
   /// with the given fields replaced by the non-null parameter values.
@@ -263,6 +283,7 @@ abstract class _Product implements Product {
           final String? barcode,
           required final double price,
           required final String unit,
+          @JsonKey(name: 'is_perishable') final bool isPerishable,
           @JsonKey(name: 'updated_at') required final DateTime updatedAt}) =
       _$ProductImpl;
 
@@ -281,6 +302,9 @@ abstract class _Product implements Product {
   double get price;
   @override
   String get unit;
+  @override
+  @JsonKey(name: 'is_perishable')
+  bool get isPerishable;
   @override
   @JsonKey(name: 'updated_at')
   DateTime get updatedAt;

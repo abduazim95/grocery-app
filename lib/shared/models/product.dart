@@ -12,6 +12,7 @@ class Product with _$Product {
     String? barcode,
     required double price,
     required String unit,
+    @Default(false) @JsonKey(name: 'is_perishable') bool isPerishable,
     @JsonKey(name: 'updated_at') required DateTime updatedAt,
   }) = _Product;
 

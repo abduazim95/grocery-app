@@ -37,6 +37,7 @@ class PurchaseOrderItem with _$PurchaseOrderItem {
     required double quantity,
     required double price,
     @JsonKey(name: 'is_bought', defaultValue: false) required bool isBought,
+    @JsonKey(name: 'expires_at') DateTime? expiresAt,
   }) = _PurchaseOrderItem;
 
   factory PurchaseOrderItem.fromJson(Map<String, dynamic> json) =>

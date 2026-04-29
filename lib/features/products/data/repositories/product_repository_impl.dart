@@ -61,6 +61,7 @@ class _ProductRepositoryImpl implements ProductRepository {
     required double price,
     required String unit,
     String? barcode,
+    bool isPerishable = false,
   }) async {
     final product = await _ds.create(
       businessId: businessId,
@@ -68,6 +69,7 @@ class _ProductRepositoryImpl implements ProductRepository {
       price: price,
       unit: unit,
       barcode: barcode,
+      isPerishable: isPerishable,
     );
     await _db.upsertProducts([product.toCompanion()]);
     return product;
@@ -84,6 +86,7 @@ class _ProductRepositoryImpl implements ProductRepository {
     required double price,
     required String unit,
     String? barcode,
+    bool isPerishable = false,
   }) async {
     final product = await _ds.update(
       id: id,
@@ -91,6 +94,7 @@ class _ProductRepositoryImpl implements ProductRepository {
       price: price,
       unit: unit,
       barcode: barcode,
+      isPerishable: isPerishable,
     );
     await _db.upsertProducts([product.toCompanion()]);
     return product;

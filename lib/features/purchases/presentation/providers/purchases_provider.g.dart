@@ -197,7 +197,7 @@ class _PurchasesListProviderElement
   String? get status => (origin as PurchasesListProvider).status;
 }
 
-String _$purchaseDetailHash() => r'a27ebd595ebc06a248f3e1a10a912172d8eea108';
+String _$purchaseDetailHash() => r'aab8e022b6fd523cd641d6002ec9460a50731b74';
 
 abstract class _$PurchaseDetail
     extends BuildlessAutoDisposeAsyncNotifier<PurchaseOrder> {

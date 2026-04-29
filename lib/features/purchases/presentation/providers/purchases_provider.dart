@@ -105,12 +105,14 @@ class PurchaseDetail extends _$PurchaseDetail {
     required String productId,
     required double quantity,
     required double price,
+    DateTime? expiresAt,
   }) async {
     await ref.read(purchaseRepositoryProvider).addItem(
           purchaseId: id,
           productId: productId,
           quantity: quantity,
           price: price,
+          expiresAt: expiresAt,
         );
     ref.invalidateSelf();
     await future;

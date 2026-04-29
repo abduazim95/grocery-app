@@ -5,11 +5,13 @@ import 'package:grocery/features/purchases/data/repositories/purchase_repository
 import 'package:grocery/features/purchases/presentation/providers/purchases_provider.dart';
 import 'package:grocery/features/products/data/repositories/product_repository_impl.dart';
 import 'package:grocery/core/providers/core_providers.dart';
+import 'package:grocery/shared/models/product.dart';
 import 'package:grocery/shared/models/purchase.dart';
 import 'package:grocery/shared/utils/error_messages.dart';
 import 'package:grocery/shared/utils/formatters.dart';
 import 'package:grocery/shared/widgets/confirm_dialog.dart';
 import 'package:grocery/shared/widgets/error_view.dart';
+import 'package:intl/intl.dart';
 
 class PurchaseDetailScreen extends ConsumerWidget {
   final String id;
@@ -96,6 +98,20 @@ class _OrderBody extends ConsumerWidget {
 
   Future<void> _closeOrder(
       BuildContext context, WidgetRef ref, PurchaseOrder order) async {
+    // Клиентская валидация: купленные скоропортящиеся должны иметь expiresAt
+    final missingExpiry = order.items
+        .where((i) => i.isBought && (i.product?.isPerishable == true) && i.expiresAt == null)
+        .toList();
+    if (missingExpiry.isNotEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Укажите срок годности для скоропортящихся товаров'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     final unbought = order.items.where((i) => !i.isBought).length;
     if (unbought > 0) {
       final confirmed = await showConfirmDialog(
@@ -139,9 +155,16 @@ class _ItemTile extends ConsumerWidget {
     required this.isOpen,
   });
 
+  bool get _isPerishable => item.product?.isPerishable == true;
+  bool get _missingExpiry => _isPerishable && item.isBought && item.expiresAt == null;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final name = item.product?.name ?? item.productId;
+    final expiryStr = item.expiresAt != null
+        ? DateFormat('dd.MM.yyyy').format(item.expiresAt!)
+        : null;
+
     return ListTile(
       leading: Checkbox(
         value: item.isBought,
@@ -168,7 +191,21 @@ class _ItemTile extends ConsumerWidget {
           decoration: item.isBought ? TextDecoration.lineThrough : null,
         ),
       ),
-      subtitle: Text('${item.quantity} × ${formatSum(item.price)}'),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('${item.quantity} × ${formatSum(item.price)}'),
+          if (_isPerishable)
+            Text(
+              expiryStr != null ? 'Срок: $expiryStr' : 'Укажите срок годности',
+              style: TextStyle(
+                fontSize: 12,
+                color: _missingExpiry ? Colors.red : Colors.grey,
+                fontWeight: _missingExpiry ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+        ],
+      ),
       trailing: isOpen
           ? Row(
               mainAxisSize: MainAxisSize.min,
@@ -231,13 +268,17 @@ class _EditItemSheet extends ConsumerStatefulWidget {
 class _EditItemSheetState extends ConsumerState<_EditItemSheet> {
   late final TextEditingController _qtyCtrl;
   late final TextEditingController _priceCtrl;
+  DateTime? _expiresAt;
   bool _isLoading = false;
+
+  bool get _isPerishable => widget.item.product?.isPerishable == true;
 
   @override
   void initState() {
     super.initState();
     _qtyCtrl = TextEditingController(text: widget.item.quantity.toStringAsFixed(0));
     _priceCtrl = TextEditingController(text: widget.item.price.toStringAsFixed(0));
+    _expiresAt = widget.item.expiresAt;
   }
 
   @override
@@ -245,6 +286,16 @@ class _EditItemSheetState extends ConsumerState<_EditItemSheet> {
     _qtyCtrl.dispose();
     _priceCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _expiresAt ?? DateTime.now().add(const Duration(days: 30)),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 3650)),
+    );
+    if (picked != null) setState(() => _expiresAt = picked);
   }
 
   Future<void> _save() async {
@@ -259,6 +310,7 @@ class _EditItemSheetState extends ConsumerState<_EditItemSheet> {
             itemId: widget.item.id,
             quantity: qty,
             price: price,
+            expiresAt: _expiresAt,
           );
       ref.invalidate(purchaseDetailProvider(widget.purchaseId));
       if (mounted) Navigator.pop(context);
@@ -275,6 +327,10 @@ class _EditItemSheetState extends ConsumerState<_EditItemSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final dateStr = _expiresAt != null
+        ? DateFormat('dd.MM.yyyy').format(_expiresAt!)
+        : 'Не выбран';
+
     return Padding(
       padding:
           EdgeInsets.fromLTRB(16, 16, 16, MediaQuery.of(context).viewInsets.bottom + 16),
@@ -310,6 +366,16 @@ class _EditItemSheetState extends ConsumerState<_EditItemSheet> {
               ),
             ],
           ),
+          if (_isPerishable) ...[
+            const SizedBox(height: 4),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Срок годности'),
+              subtitle: Text(dateStr),
+              trailing: const Icon(Icons.calendar_today_outlined),
+              onTap: _pickDate,
+            ),
+          ],
           const SizedBox(height: 16),
           FilledButton(
             onPressed: _isLoading ? null : _save,
@@ -340,12 +406,13 @@ class _AddItemSheetState extends ConsumerState<_AddItemSheet> {
   final _searchCtrl = TextEditingController();
   final _qtyCtrl = TextEditingController(text: '1');
   final _priceCtrl = TextEditingController();
-  String? _selectedProductId;
-  String? _selectedProductName;
+  Product? _selectedProduct;
+  DateTime? _expiresAt;
   bool _isLoading = false;
-  List<dynamic> _results = [];
+  List<Product> _results = [];
 
   String get _businessId => ref.read(authStateProvider).valueOrNull?.businessId ?? '';
+  bool get _isPerishable => _selectedProduct?.isPerishable == true;
 
   @override
   void dispose() {
@@ -363,8 +430,18 @@ class _AddItemSheetState extends ConsumerState<_AddItemSheet> {
     setState(() => _results = r.products);
   }
 
+  Future<void> _pickDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _expiresAt ?? DateTime.now().add(const Duration(days: 30)),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 3650)),
+    );
+    if (picked != null) setState(() => _expiresAt = picked);
+  }
+
   Future<void> _add() async {
-    if (_selectedProductId == null) return;
+    if (_selectedProduct == null) return;
     final qty = double.tryParse(_qtyCtrl.text);
     final price = double.tryParse(_priceCtrl.text);
     if (qty == null || price == null) return;
@@ -372,9 +449,10 @@ class _AddItemSheetState extends ConsumerState<_AddItemSheet> {
     setState(() => _isLoading = true);
     try {
       await ref.read(purchaseDetailProvider(widget.purchaseId).notifier).addItem(
-            productId: _selectedProductId!,
+            productId: _selectedProduct!.id,
             quantity: qty,
             price: price,
+            expiresAt: _expiresAt,
           );
       if (mounted) Navigator.pop(context);
     } catch (e) {
@@ -390,6 +468,10 @@ class _AddItemSheetState extends ConsumerState<_AddItemSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final dateStr = _expiresAt != null
+        ? DateFormat('dd.MM.yyyy').format(_expiresAt!)
+        : 'Не выбран';
+
     return Padding(
       padding: EdgeInsets.fromLTRB(
           16, 16, 16, MediaQuery.of(context).viewInsets.bottom + 16),
@@ -418,21 +500,36 @@ class _AddItemSheetState extends ConsumerState<_AddItemSheet> {
                   return ListTile(
                     dense: true,
                     title: Text(p.name),
-                    selected: _selectedProductId == p.id,
+                    trailing: p.isPerishable
+                        ? const Icon(Icons.timer_outlined, size: 16, color: Colors.orange)
+                        : null,
+                    selected: _selectedProduct?.id == p.id,
                     onTap: () => setState(() {
-                      _selectedProductId = p.id;
-                      _selectedProductName = p.name;
+                      _selectedProduct = p;
                       _priceCtrl.text = p.price.toStringAsFixed(0);
                       _searchCtrl.text = p.name;
                       _results = [];
+                      _expiresAt = null;
                     }),
                   );
                 },
               ),
             ),
-          if (_selectedProductName != null)
-            Text('Выбрано: $_selectedProductName',
-                style: const TextStyle(color: Colors.green)),
+          if (_selectedProduct != null)
+            Row(
+              children: [
+                Icon(
+                  _isPerishable ? Icons.timer_outlined : Icons.check_circle_outline,
+                  size: 16,
+                  color: _isPerishable ? Colors.orange : Colors.green,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  _selectedProduct!.name,
+                  style: TextStyle(color: _isPerishable ? Colors.orange : Colors.green),
+                ),
+              ],
+            ),
           const SizedBox(height: 12),
           Row(
             children: [
@@ -455,9 +552,19 @@ class _AddItemSheetState extends ConsumerState<_AddItemSheet> {
               ),
             ],
           ),
+          if (_isPerishable) ...[
+            const SizedBox(height: 4),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Срок годности'),
+              subtitle: Text(dateStr),
+              trailing: const Icon(Icons.calendar_today_outlined),
+              onTap: _pickDate,
+            ),
+          ],
           const SizedBox(height: 16),
           FilledButton(
-            onPressed: _isLoading || _selectedProductId == null ? null : _add,
+            onPressed: _isLoading || _selectedProduct == null ? null : _add,
             child: _isLoading
                 ? const SizedBox(
                     height: 20,

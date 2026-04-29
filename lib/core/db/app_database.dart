@@ -13,7 +13,16 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+        onUpgrade: (m, from, to) async {
+          if (from < 2) {
+            await m.addColumn(productsTable, productsTable.isPerishable);
+          }
+        },
+      );
 
   Future<void> upsertProducts(List<ProductsTableCompanion> rows) =>
       batch((b) => b.insertAllOnConflictUpdate(productsTable, rows));
@@ -54,6 +63,7 @@ extension ProductsTableDataX on ProductsTableData {
         barcode: barcode,
         price: price,
         unit: unit,
+        isPerishable: isPerishable,
         updatedAt: cachedAt,
       );
 }
@@ -66,6 +76,7 @@ extension ProductX on Product {
         barcode: Value(barcode),
         price: Value(price),
         unit: Value(unit),
+        isPerishable: Value(isPerishable),
         cachedAt: Value(DateTime.now()),
       );
 }

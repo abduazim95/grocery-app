@@ -51,6 +51,9 @@ _$PurchaseOrderItemImpl _$$PurchaseOrderItemImplFromJson(
       quantity: (json['quantity'] as num).toDouble(),
       price: (json['price'] as num).toDouble(),
       isBought: json['is_bought'] as bool? ?? false,
+      expiresAt: json['expires_at'] == null
+          ? null
+          : DateTime.parse(json['expires_at'] as String),
     );
 
 Map<String, dynamic> _$$PurchaseOrderItemImplToJson(
@@ -63,4 +66,5 @@ Map<String, dynamic> _$$PurchaseOrderItemImplToJson(
       'quantity': instance.quantity,
       'price': instance.price,
       'is_bought': instance.isBought,
+      'expires_at': instance.expiresAt?.toIso8601String(),
     };
