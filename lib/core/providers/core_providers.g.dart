@@ -70,7 +70,7 @@ final serverConfigProvider =
 );
 
 typedef _$ServerConfig = AsyncNotifier<String?>;
-String _$authStateHash() => r'd96b6f1f418eae17350f31b47b6d654efc669c82';
+String _$authStateHash() => r'bbb90c9ad063fdbd007685da7468f1ab773fdb66';
 
 /// See also [AuthState].
 @ProviderFor(AuthState)

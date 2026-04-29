@@ -120,6 +120,7 @@ class _ChangeNameSheet extends ConsumerStatefulWidget {
 class _ChangeNameSheetState extends ConsumerState<_ChangeNameSheet> {
   late final TextEditingController _ctrl;
   bool _isLoading = false;
+  String? _error;
 
   @override
   void initState() {
@@ -136,7 +137,10 @@ class _ChangeNameSheetState extends ConsumerState<_ChangeNameSheet> {
   Future<void> _save() async {
     final name = _ctrl.text.trim();
     if (name.length < 2) return;
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
     try {
       final updated = await ref.read(profileRepositoryProvider).updateName(name);
       await ref.read(authStateProvider.notifier).updateUser(updated);
@@ -147,11 +151,7 @@ class _ChangeNameSheetState extends ConsumerState<_ChangeNameSheet> {
         );
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(mapException(e)), backgroundColor: Colors.red),
-        );
-      }
+      if (mounted) setState(() => _error = mapException(e));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -171,8 +171,18 @@ class _ChangeNameSheetState extends ConsumerState<_ChangeNameSheet> {
           TextField(
             controller: _ctrl,
             autofocus: true,
+            onChanged: (_) {
+              if (_error != null) setState(() => _error = null);
+            },
             decoration: const InputDecoration(labelText: 'Имя'),
           ),
+          if (_error != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              _error!,
+              style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 13),
+            ),
+          ],
           const SizedBox(height: 16),
           FilledButton(
             onPressed: _isLoading ? null : _save,
@@ -200,6 +210,7 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
   final _confirmCtrl = TextEditingController();
   bool _isLoading = false;
   String? _confirmError;
+  String? _serverError;
 
   @override
   void dispose() {
@@ -211,10 +222,16 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
 
   Future<void> _save() async {
     if (_newCtrl.text != _confirmCtrl.text) {
-      setState(() => _confirmError = 'Пароли не совпадают');
+      setState(() {
+        _confirmError = 'Пароли не совпадают';
+        _serverError = null;
+      });
       return;
     }
-    setState(() => _confirmError = null);
+    setState(() {
+      _confirmError = null;
+      _serverError = null;
+    });
 
     if (_oldCtrl.text.isEmpty || _newCtrl.text.length < 6) return;
 
@@ -227,16 +244,13 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
           );
       if (mounted) {
         Navigator.pop(context);
+        // Используем rootNavigator context, чтобы снекбар был поверх bottom sheet
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Пароль изменён')),
         );
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(mapException(e)), backgroundColor: Colors.red),
-        );
-      }
+      if (mounted) setState(() => _serverError = mapException(e));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -256,6 +270,9 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
           TextField(
             controller: _oldCtrl,
             obscureText: true,
+            onChanged: (_) {
+              if (_serverError != null) setState(() => _serverError = null);
+            },
             decoration: const InputDecoration(labelText: 'Текущий пароль'),
           ),
           const SizedBox(height: 12),
@@ -279,6 +296,13 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
               errorText: _confirmError,
             ),
           ),
+          if (_serverError != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              _serverError!,
+              style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 13),
+            ),
+          ],
           const SizedBox(height: 16),
           FilledButton(
             onPressed: _isLoading ? null : _save,

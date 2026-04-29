@@ -6,6 +6,7 @@ abstract class Endpoints {
   static const resetPassword = '/v1/auth/reset-password';
   // Products
   static const products = '/v1/products';
+  static const productsBatchPrice = '/v1/products/price';
   static String productById(String id) => '/v1/products/$id';
   static String productBarcode(String b) => '/v1/products/barcode/$b';
   // Sales

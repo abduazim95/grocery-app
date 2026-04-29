@@ -5,11 +5,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:grocery/core/providers/core_providers.dart';
 import 'package:grocery/core/router/app_routes.dart';
+import 'package:grocery/features/products/data/repositories/product_repository_impl.dart';
 import 'package:grocery/features/products/presentation/providers/barcode_lookup_provider.dart';
+import 'package:grocery/features/products/presentation/providers/product_selection_provider.dart';
 import 'package:grocery/features/products/presentation/providers/products_provider.dart';
 import 'package:grocery/shared/models/product.dart';
 import 'package:grocery/shared/utils/error_messages.dart';
 import 'package:grocery/shared/utils/formatters.dart';
+import 'package:grocery/shared/widgets/amount_field.dart';
 import 'package:grocery/shared/widgets/barcode_scanner_screen.dart';
 import 'package:grocery/shared/widgets/error_view.dart';
 
@@ -116,45 +119,150 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
     );
   }
 
+  Future<void> _showBatchPriceSheet(Set<String> selectedIds) async {
+    final priceCtrl = TextEditingController();
+    String? error;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheetState) {
+          return Padding(
+            padding: EdgeInsets.fromLTRB(
+              24,
+              24,
+              24,
+              MediaQuery.of(ctx).viewInsets.bottom + 24,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  'Изменить цену (${selectedIds.length} тов.)',
+                  style: Theme.of(ctx).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 16),
+                AmountField(
+                  controller: priceCtrl,
+                  label: 'Новая цена',
+                  errorText: error,
+                  autofocus: true,
+                ),
+                const SizedBox(height: 16),
+                FilledButton(
+                  onPressed: () async {
+                    final price = double.tryParse(priceCtrl.text.trim());
+                    if (price == null || price <= 0) {
+                      setSheetState(() => error = 'Введите корректную цену');
+                      return;
+                    }
+                    Navigator.of(ctx).pop();
+                    await _applyBatchPrice(selectedIds.toList(), price);
+                  },
+                  child: const Text('Применить'),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Future<void> _applyBatchPrice(List<String> ids, double price) async {
+    try {
+      final updated = await ref
+          .read(productRepositoryProvider)
+          .batchUpdatePrice(ids, price);
+      if (!mounted) return;
+      ref.read(productSelectionProvider.notifier).clear();
+      ref
+          .read(productsListNotifierProvider(_businessId, query: _query).notifier)
+          .refresh(_businessId, query: _query);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Обновлено $updated товаров')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(mapException(e)), backgroundColor: Colors.red),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final businessId = _businessId;
     final productsAsync =
         ref.watch(productsListNotifierProvider(businessId, query: _query));
+    final selected = ref.watch(productSelectionProvider);
+    final isSelecting = selected.isNotEmpty;
+    final loadedItems = productsAsync.valueOrNull?.items ?? [];
+    final allLoaded = loadedItems.isNotEmpty &&
+        loadedItems.every((p) => selected.contains(p.id));
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Товары'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings_outlined),
-            onPressed: () => context.push(AppRoutes.settings),
-          ),
-        ],
-      ),
+      appBar: isSelecting
+          ? AppBar(
+              leading: IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () => ref.read(productSelectionProvider.notifier).clear(),
+              ),
+              title: Text('Выбрано: ${selected.length}'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    if (allLoaded) {
+                      ref.read(productSelectionProvider.notifier).clear();
+                    } else {
+                      ref
+                          .read(productSelectionProvider.notifier)
+                          .selectAll(loadedItems.map((p) => p.id));
+                    }
+                  },
+                  child: Text(allLoaded ? 'Снять все' : 'Выбрать все'),
+                ),
+                TextButton(
+                  onPressed: () => _showBatchPriceSheet(selected),
+                  child: const Text('Изменить цену'),
+                ),
+              ],
+            )
+          : AppBar(
+              title: const Text('Товары'),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.settings_outlined),
+                  onPressed: () => context.push(AppRoutes.settings),
+                ),
+              ],
+            ),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-            child: TextField(
-              controller: _searchCtrl,
-              onChanged: _onSearchChanged,
-              decoration: InputDecoration(
-                hintText: 'Поиск по названию',
-                prefixIcon: const Icon(Icons.search),
-                isDense: true,
-                suffixIcon: _query.isEmpty
-                    ? null
-                    : IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          _searchCtrl.clear();
-                          setState(() => _query = '');
-                        },
-                      ),
+          if (!isSelecting)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+              child: TextField(
+                controller: _searchCtrl,
+                onChanged: _onSearchChanged,
+                decoration: InputDecoration(
+                  hintText: 'Поиск по названию',
+                  prefixIcon: const Icon(Icons.search),
+                  isDense: true,
+                  suffixIcon: _query.isEmpty
+                      ? null
+                      : IconButton(
+                          icon: const Icon(Icons.clear),
+                          onPressed: () {
+                            _searchCtrl.clear();
+                            setState(() => _query = '');
+                          },
+                        ),
+                ),
               ),
             ),
-          ),
           Expanded(
             child: productsAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
@@ -191,7 +299,20 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                               ),
                             );
                           }
-                          return _ProductTile(product: state.items[i]);
+                          final product = state.items[i];
+                          return _ProductTile(
+                            product: product,
+                            isSelectionMode: isSelecting,
+                            isSelected: selected.contains(product.id),
+                            onTap: isSelecting
+                                ? () => ref
+                                    .read(productSelectionProvider.notifier)
+                                    .toggle(product.id)
+                                : () => context.push('/products/${product.id}/edit'),
+                            onLongPress: () => ref
+                                .read(productSelectionProvider.notifier)
+                                .toggle(product.id),
+                          );
                         },
                       ),
               ),
@@ -199,34 +320,49 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
           ),
         ],
       ),
-      floatingActionButton: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          FloatingActionButton.small(
-            heroTag: 'scan',
-            onPressed: _onBarcodeScanned,
-            child: const Icon(Icons.qr_code_scanner),
-          ),
-          const SizedBox(height: 8),
-          FloatingActionButton(
-            heroTag: 'add',
-            onPressed: () => context.push(AppRoutes.newProduct),
-            child: const Icon(Icons.add),
-          ),
-        ],
-      ),
+      floatingActionButton: isSelecting
+          ? null
+          : Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                FloatingActionButton.small(
+                  heroTag: 'scan',
+                  onPressed: _onBarcodeScanned,
+                  child: const Icon(Icons.qr_code_scanner),
+                ),
+                const SizedBox(height: 8),
+                FloatingActionButton(
+                  heroTag: 'add',
+                  onPressed: () => context.push(AppRoutes.newProduct),
+                  child: const Icon(Icons.add),
+                ),
+              ],
+            ),
     );
   }
 }
 
 class _ProductTile extends StatelessWidget {
   final Product product;
+  final bool isSelectionMode;
+  final bool isSelected;
+  final VoidCallback onTap;
+  final VoidCallback onLongPress;
 
-  const _ProductTile({required this.product});
+  const _ProductTile({
+    required this.product,
+    required this.isSelectionMode,
+    required this.isSelected,
+    required this.onTap,
+    required this.onLongPress,
+  });
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
+      leading: isSelectionMode
+          ? Checkbox(value: isSelected, onChanged: (_) => onTap())
+          : null,
       title: Text(product.name),
       subtitle: product.barcode != null ? Text(product.barcode!) : null,
       trailing: Column(
@@ -240,7 +376,9 @@ class _ProductTile extends StatelessWidget {
           Text(product.unit, style: const TextStyle(color: Colors.grey, fontSize: 12)),
         ],
       ),
-      onTap: () => context.push('/products/${product.id}/edit'),
+      selected: isSelected,
+      onTap: onTap,
+      onLongPress: onLongPress,
     );
   }
 }

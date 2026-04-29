@@ -263,8 +263,8 @@ class _$StockItemImpl implements _StockItem {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, id, storeId, productId, product, quantity, minQuantity, updatedAt);
+  int get hashCode => Object.hash(runtimeType, id, storeId, productId, product,
+      quantity, minQuantity, updatedAt);
 
   /// Create a copy of StockItem
   /// with the given fields replaced by the non-null parameter values.

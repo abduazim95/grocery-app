@@ -23,4 +23,5 @@ abstract interface class ProductRepository {
     required String unit,
     String? barcode,
   });
+  Future<int> batchUpdatePrice(List<String> ids, double price);
 }

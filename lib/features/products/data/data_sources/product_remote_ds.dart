@@ -60,6 +60,17 @@ class ProductRemoteDs {
     return unwrapData(response, (d) => Product.fromJson(d as Map<String, dynamic>));
   }
 
+  Future<int> batchUpdatePrice(List<String> ids, double price) async {
+    final response = await _client.patch(
+      Endpoints.productsBatchPrice,
+      data: {'ids': ids, 'price': price},
+    );
+    return unwrapData(
+      response,
+      (d) => (d as Map<String, dynamic>)['updated'] as int,
+    );
+  }
+
   Future<Product> update({
     required String id,
     required String name,

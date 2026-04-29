@@ -74,6 +74,10 @@ class _ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
+  Future<int> batchUpdatePrice(List<String> ids, double price) =>
+      _ds.batchUpdatePrice(ids, price);
+
+  @override
   Future<Product> update({
     required String id,
     required String name,

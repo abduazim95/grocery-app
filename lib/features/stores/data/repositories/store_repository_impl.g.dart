@@ -39,8 +39,7 @@ final storesListProvider = AutoDisposeFutureProvider<List<Store>>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef StoresListRef = AutoDisposeFutureProviderRef<List<Store>>;
-
-String _$storeSellersHash() => r'b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2';
+String _$storeSellersHash() => r'c52342811b913597fff0ec42472279749d92c4a4';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -73,15 +72,21 @@ class StoreSellersFamily extends Family<AsyncValue<List<User>>> {
   const StoreSellersFamily();
 
   /// See also [storeSellers].
-  StoreSellersProvider call(String storeId) {
-    return StoreSellersProvider(storeId);
+  StoreSellersProvider call(
+    String storeId,
+  ) {
+    return StoreSellersProvider(
+      storeId,
+    );
   }
 
   @override
   StoreSellersProvider getProviderOverride(
     covariant StoreSellersProvider provider,
   ) {
-    return call(provider.storeId);
+    return call(
+      provider.storeId,
+    );
   }
 
   static const Iterable<ProviderOrFamily>? _dependencies = null;
@@ -102,9 +107,13 @@ class StoreSellersFamily extends Family<AsyncValue<List<User>>> {
 /// See also [storeSellers].
 class StoreSellersProvider extends AutoDisposeFutureProvider<List<User>> {
   /// See also [storeSellers].
-  StoreSellersProvider(String storeId)
-      : this._internal(
-          (ref) => storeSellers(ref as StoreSellersRef, storeId),
+  StoreSellersProvider(
+    String storeId,
+  ) : this._internal(
+          (ref) => storeSellers(
+            ref as StoreSellersRef,
+            storeId,
+          ),
           from: storeSellersProvider,
           name: r'storeSellersProvider',
           debugGetCreateSourceHash:
@@ -161,6 +170,7 @@ class StoreSellersProvider extends AutoDisposeFutureProvider<List<User>> {
   int get hashCode {
     var hash = _SystemHash.combine(0, runtimeType.hashCode);
     hash = _SystemHash.combine(hash, storeId.hashCode);
+
     return _SystemHash.finish(hash);
   }
 }
@@ -168,17 +178,16 @@ class StoreSellersProvider extends AutoDisposeFutureProvider<List<User>> {
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 mixin StoreSellersRef on AutoDisposeFutureProviderRef<List<User>> {
+  /// The parameter `storeId` of this provider.
   String get storeId;
 }
 
 class _StoreSellersProviderElement
-    extends AutoDisposeFutureProviderElement<List<User>>
-    with StoreSellersRef {
+    extends AutoDisposeFutureProviderElement<List<User>> with StoreSellersRef {
   _StoreSellersProviderElement(super.provider);
 
   @override
   String get storeId => (origin as StoreSellersProvider).storeId;
 }
-
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
