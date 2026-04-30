@@ -5,7 +5,9 @@ import 'package:go_router/go_router.dart';
 import 'package:grocery/core/providers/core_providers.dart';
 import 'package:grocery/core/router/app_routes.dart';
 import 'package:grocery/features/debts/presentation/providers/debts_provider.dart';
+import 'package:grocery/features/stores/data/repositories/store_repository_impl.dart';
 import 'package:grocery/shared/models/debt.dart';
+import 'package:grocery/shared/models/store.dart';
 import 'package:grocery/shared/utils/error_messages.dart';
 import 'package:grocery/shared/utils/formatters.dart';
 import 'package:grocery/shared/widgets/error_view.dart';
@@ -29,11 +31,16 @@ class _DebtsScreenState extends ConsumerState<DebtsScreen> {
 
   String get _storeId => ref.read(authStateProvider).valueOrNull?.storeId ?? '';
 
+  bool get _isManager {
+    final user = ref.read(authStateProvider).valueOrNull;
+    return user?.isManager == true || user?.isSuperAdmin == true;
+  }
+
   void _showCreateSheet() {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder: (_) => _CreateDebtSheet(storeId: _storeId),
+      builder: (_) => _CreateDebtSheet(storeId: _isManager ? null : _storeId),
     );
   }
 
@@ -129,7 +136,8 @@ class _DebtTile extends StatelessWidget {
 }
 
 class _CreateDebtSheet extends ConsumerStatefulWidget {
-  final String storeId;
+  // null means manager flow — user picks a store
+  final String? storeId;
 
   const _CreateDebtSheet({required this.storeId});
 
@@ -142,7 +150,13 @@ class _CreateDebtSheetState extends ConsumerState<_CreateDebtSheet> {
   final _phoneCtrl = TextEditingController();
   final _amountCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
+  Store? _selectedStore;
   bool _isLoading = false;
+
+  bool get _needsStorePicker => widget.storeId == null;
+
+  String? get _effectiveStoreId =>
+      _needsStorePicker ? _selectedStore?.id : widget.storeId;
 
   @override
   void dispose() {
@@ -156,12 +170,14 @@ class _CreateDebtSheetState extends ConsumerState<_CreateDebtSheet> {
   Future<void> _create() async {
     final name = _nameCtrl.text.trim();
     final amount = double.tryParse(_amountCtrl.text.trim());
+    final storeId = _effectiveStoreId;
     if (name.isEmpty || amount == null || amount <= 0) return;
+    if (storeId == null || storeId.isEmpty) return;
 
     setState(() => _isLoading = true);
     try {
-      await ref.read(debtsListProvider(storeId: widget.storeId).notifier).createDebt(
-            storeId: widget.storeId,
+      await ref.read(debtsListProvider(storeId: storeId).notifier).createDebt(
+            storeId: storeId,
             debtorName: name,
             debtorPhone:
                 _phoneCtrl.text.trim().isEmpty ? null : _phoneCtrl.text.trim(),
@@ -193,6 +209,13 @@ class _CreateDebtSheetState extends ConsumerState<_CreateDebtSheet> {
           const Text('Новый долг',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 16),
+          if (_needsStorePicker) ...[
+            _StorePicker(
+              selected: _selectedStore,
+              onChanged: (store) => setState(() => _selectedStore = store),
+            ),
+            const SizedBox(height: 12),
+          ],
           TextField(
             controller: _nameCtrl,
             decoration: const InputDecoration(labelText: 'Имя должника *'),
@@ -226,6 +249,36 @@ class _CreateDebtSheetState extends ConsumerState<_CreateDebtSheet> {
                 : const Text('Создать'),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _StorePicker extends ConsumerWidget {
+  final Store? selected;
+  final ValueChanged<Store?> onChanged;
+
+  const _StorePicker({required this.selected, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final storesAsync = ref.watch(storesListProvider);
+
+    return storesAsync.when(
+      loading: () => const LinearProgressIndicator(),
+      error: (e, _) => Text(mapException(e), style: const TextStyle(color: Colors.red)),
+      data: (stores) => InputDecorator(
+        decoration: const InputDecoration(labelText: 'Магазин *'),
+        child: DropdownButton<Store>(
+          value: selected,
+          hint: const Text('Выберите магазин'),
+          isExpanded: true,
+          underline: const SizedBox.shrink(),
+          items: stores
+              .map((s) => DropdownMenuItem(value: s, child: Text(s.name)))
+              .toList(),
+          onChanged: onChanged,
+        ),
       ),
     );
   }
