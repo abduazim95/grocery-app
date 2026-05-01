@@ -42,6 +42,7 @@ abstract class Endpoints {
   static const profilePassword = '/v1/profile/password';
   // Admin
   static const businesses = '/v1/admin/businesses';
+  static String businessById(String id) => '/v1/admin/businesses/$id';
   static const managers = '/v1/admin/managers';
   static String userById(String id) => '/v1/admin/users/$id';
 }

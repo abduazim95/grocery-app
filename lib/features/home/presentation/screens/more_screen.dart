@@ -39,6 +39,13 @@ class MoreScreen extends ConsumerWidget {
             ),
           if (user?.isSuperAdmin ?? false)
             ListTile(
+              leading: const Icon(Icons.business_outlined),
+              title: const Text('Бизнесы'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.push(AppRoutes.adminBusinesses),
+            ),
+          if (user?.isSuperAdmin ?? false)
+            ListTile(
               leading: const Icon(Icons.person_add_outlined),
               title: const Text('Создать руководителя'),
               trailing: const Icon(Icons.chevron_right),

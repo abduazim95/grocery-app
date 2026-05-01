@@ -4,6 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:grocery/core/providers/core_providers.dart';
 import 'package:grocery/core/router/app_routes.dart';
+import 'package:grocery/features/admin/presentation/screens/business_detail_screen.dart';
+import 'package:grocery/features/admin/presentation/screens/business_list_screen.dart';
+import 'package:grocery/features/admin/presentation/screens/create_business_screen.dart';
 import 'package:grocery/features/admin/presentation/screens/create_manager_screen.dart';
 import 'package:grocery/features/auth/presentation/screens/login_screen.dart';
 import 'package:grocery/features/auth/presentation/screens/register_screen.dart';
@@ -147,8 +150,25 @@ GoRouter appRouter(Ref ref) {
         builder: (_, __) => const TransferStockScreen(),
       ),
       GoRoute(
+        path: AppRoutes.adminBusinesses,
+        builder: (_, __) => const BusinessListScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.newBusiness,
+        builder: (_, __) => const CreateBusinessScreen(),
+      ),
+      GoRoute(
+        path: '/admin/businesses/:id',
+        builder: (_, s) => BusinessDetailScreen(
+          id: s.pathParameters['id']!,
+          name: (s.extra as String?) ?? 'Бизнес',
+        ),
+      ),
+      GoRoute(
         path: AppRoutes.newManager,
-        builder: (_, __) => const CreateManagerScreen(),
+        builder: (_, s) => CreateManagerScreen(
+          preselectedBusinessId: s.extra as String?,
+        ),
       ),
       GoRoute(path: AppRoutes.profile, builder: (_, __) => const ProfileScreen()),
       GoRoute(path: AppRoutes.settings, builder: (_, __) => const SettingsScreen()),

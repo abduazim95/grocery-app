@@ -19,6 +19,9 @@ abstract class AppRoutes {
   static const storeDetail = '/stores/:id';
   static const storeStock = '/stores/:id/stock';
   static const stockTransfer = '/stock/transfer';
+  static const adminBusinesses = '/admin/businesses';
+  static String adminBusiness(String id) => '/admin/businesses/$id';
+  static const newBusiness = '/admin/businesses/new';
   static const newManager = '/admin/managers/new';
   static const profile = '/profile';
   static const settings = '/settings';
