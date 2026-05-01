@@ -2,7 +2,7 @@ import 'package:grocery/shared/models/sale.dart';
 
 abstract interface class SaleRepository {
   Future<List<Sale>> listSales({
-    required String storeId,
+    String? storeId,
     int page,
     int limit,
     DateTime? from,
@@ -10,7 +10,7 @@ abstract interface class SaleRepository {
   });
   Future<Sale> getSaleById(String id);
   Future<Sale> createSale({
-    required String storeId,
+    String? storeId,
     required List<SaleItemDraft> items,
   });
 }

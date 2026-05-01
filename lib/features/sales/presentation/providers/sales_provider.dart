@@ -37,7 +37,7 @@ class SalesList extends _$SalesList {
   DateTime? _to;
 
   @override
-  Future<SalesPageData> build(String storeId) => _fetchPage(1, reset: true);
+  Future<SalesPageData> build(String? storeId) => _fetchPage(1, reset: true);
 
   Future<SalesPageData> _fetchPage(int page, {required bool reset}) async {
     final items = await ref.read(saleRepositoryProvider).listSales(

@@ -37,7 +37,7 @@ class CreateSale extends _$CreateSale {
 
   double get total => state.fold(0, (sum, i) => sum + i.subtotal);
 
-  Future<Sale> submit(String storeId) async {
+  Future<Sale> submit({String? storeId}) async {
     return ref.read(saleRepositoryProvider).createSale(
           storeId: storeId,
           items: state,

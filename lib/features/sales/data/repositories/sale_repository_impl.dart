@@ -20,7 +20,7 @@ class _SaleRepositoryImpl implements SaleRepository {
 
   @override
   Future<List<Sale>> listSales({
-    required String storeId,
+    String? storeId,
     int page = 1,
     int limit = 30,
     DateTime? from,
@@ -33,7 +33,7 @@ class _SaleRepositoryImpl implements SaleRepository {
 
   @override
   Future<Sale> createSale({
-    required String storeId,
+    String? storeId,
     required List<SaleItemDraft> items,
   }) =>
       _ds.createSale(

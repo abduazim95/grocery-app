@@ -32,7 +32,10 @@ class _CreateSaleScreenState extends ConsumerState<CreateSaleScreen> {
   String? _selectedStoreId;
 
   bool get _isManager => ref.read(authStateProvider).valueOrNull?.isManager ?? false;
-  String get _storeId => _isManager ? (_selectedStoreId ?? '') : (ref.read(authStateProvider).valueOrNull?.storeId ?? '');
+  // Used only for invalidating the sales list after submit.
+  String? get _storeId => _isManager
+      ? _selectedStoreId
+      : ref.read(authStateProvider).valueOrNull?.storeId;
   String get _businessId => ref.read(authStateProvider).valueOrNull?.businessId ?? '';
 
   @override
@@ -96,7 +99,7 @@ class _CreateSaleScreenState extends ConsumerState<CreateSaleScreen> {
   Future<void> _submit() async {
     final items = ref.read(createSaleProvider);
     if (items.isEmpty) return;
-    if (_storeId.isEmpty) {
+    if (_isManager && (_selectedStoreId == null || _selectedStoreId!.isEmpty)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Выберите магазин'), backgroundColor: Colors.orange),
       );
@@ -105,7 +108,9 @@ class _CreateSaleScreenState extends ConsumerState<CreateSaleScreen> {
 
     setState(() => _isSubmitting = true);
     try {
-      final sale = await ref.read(createSaleProvider.notifier).submit(_storeId);
+      final sale = await ref
+          .read(createSaleProvider.notifier)
+          .submit(storeId: _isManager ? _selectedStoreId : null);
       ref.invalidate(salesListProvider(_storeId));
       if (mounted) _showReceiptDialog(sale);
     } catch (e) {

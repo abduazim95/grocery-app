@@ -157,14 +157,14 @@ class _SaleDetailProviderElement extends AutoDisposeFutureProviderElement<Sale>
   String get id => (origin as SaleDetailProvider).id;
 }
 
-String _$salesListHash() => r'dc5c78df5824a40722ac638f86236845ad601672';
+String _$salesListHash() => r'd5942db6a934762abf9fe1c660a531be11873bf7';
 
 abstract class _$SalesList
     extends BuildlessAutoDisposeAsyncNotifier<SalesPageData> {
-  late final String storeId;
+  late final String? storeId;
 
   FutureOr<SalesPageData> build(
-    String storeId,
+    String? storeId,
   );
 }
 
@@ -179,7 +179,7 @@ class SalesListFamily extends Family<AsyncValue<SalesPageData>> {
 
   /// See also [SalesList].
   SalesListProvider call(
-    String storeId,
+    String? storeId,
   ) {
     return SalesListProvider(
       storeId,
@@ -215,7 +215,7 @@ class SalesListProvider
     extends AutoDisposeAsyncNotifierProviderImpl<SalesList, SalesPageData> {
   /// See also [SalesList].
   SalesListProvider(
-    String storeId,
+    String? storeId,
   ) : this._internal(
           () => SalesList()..storeId = storeId,
           from: salesListProvider,
@@ -239,7 +239,7 @@ class SalesListProvider
     required this.storeId,
   }) : super.internal();
 
-  final String storeId;
+  final String? storeId;
 
   @override
   FutureOr<SalesPageData> runNotifierBuild(
@@ -290,7 +290,7 @@ class SalesListProvider
 // ignore: unused_element
 mixin SalesListRef on AutoDisposeAsyncNotifierProviderRef<SalesPageData> {
   /// The parameter `storeId` of this provider.
-  String get storeId;
+  String? get storeId;
 }
 
 class _SalesListProviderElement
@@ -299,7 +299,7 @@ class _SalesListProviderElement
   _SalesListProviderElement(super.provider);
 
   @override
-  String get storeId => (origin as SalesListProvider).storeId;
+  String? get storeId => (origin as SalesListProvider).storeId;
 }
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

@@ -8,7 +8,7 @@ class SaleRemoteDs {
   SaleRemoteDs(this._client);
 
   Future<List<Sale>> listSales({
-    required String storeId,
+    String? storeId,
     int page = 1,
     int limit = 30,
     DateTime? from,
@@ -17,7 +17,7 @@ class SaleRemoteDs {
     final response = await _client.get(
       Endpoints.sales,
       queryParameters: {
-        'store_id': storeId,
+        if (storeId != null) 'store_id': storeId,
         'page': page,
         'limit': limit,
         if (from != null) 'from': from.toIso8601String().substring(0, 10),
@@ -33,13 +33,15 @@ class SaleRemoteDs {
   }
 
   Future<Sale> createSale({
-    required String storeId,
+    String? storeId,
     required List<Map<String, dynamic>> items,
   }) async {
     final response = await _client.post(
       Endpoints.sales,
-      queryParameters: {'store_id': storeId},
-      data: {'items': items},
+      data: {
+        if (storeId != null) 'store_id': storeId,
+        'items': items,
+      },
     );
     return unwrapData(response, (d) => Sale.fromJson(d as Map<String, dynamic>));
   }
